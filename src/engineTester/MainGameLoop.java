@@ -13,8 +13,9 @@ import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.MasterRenderer;
 import renderEngine.ObjLoader;
-import renderEngine.Renderer;
+import renderEngine.EntityRenderer;
 import shaders.StaticShader;
+import terrain.Terrain;
 import textures.ModelTexture;
 
 public class MainGameLoop {
@@ -50,6 +51,9 @@ public class MainGameLoop {
 		Entity entity = new Entity(texturedModel, new Vector3f(0,0,-25),0,0,0,1);
 		Light light = new Light(new Vector3f(0,2,-10), new Vector3f(1,1,1));
 		
+		Terrain terrain = new Terrain(0,-1,loader, new ModelTexture(loader.loadTexture("grass01")));
+		//Terrain terrain2 = new Terrain(1,-1,loader, new ModelTexture(loader.loadTexture("stallTexture")));
+		
 		Camera camera = new Camera();
 		
 		//int frameCount = 0;
@@ -74,6 +78,8 @@ public class MainGameLoop {
 			//shader.loadViewMatrix(camera);
 			//renderer.render(entity, shader);
 			//shader.stop();
+			renderer.processTerrain(terrain);
+			//renderer.processTerrain(terrain2);
 			renderer.processEntity(entity);
 			renderer.render(light, camera);
 			DisplayManager.updateDisplay();
