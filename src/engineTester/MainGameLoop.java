@@ -11,6 +11,7 @@ import entities.Entity;
 import entities.Light;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
+import renderEngine.MasterRenderer;
 import renderEngine.ObjLoader;
 import renderEngine.Renderer;
 import shaders.StaticShader;
@@ -21,8 +22,8 @@ public class MainGameLoop {
 		DisplayManager.createDisplay();
 		
 		Loader loader = new Loader();
-		StaticShader shader = new StaticShader();
-		Renderer renderer = new Renderer(shader);
+		//StaticShader shader = new StaticShader();
+		//Renderer renderer = new Renderer(shader);
 		
 		/*float vertices[] = {
 			-0.5f, 0.5f, 0,
@@ -53,6 +54,7 @@ public class MainGameLoop {
 		
 		//int frameCount = 0;
 		//long prevTime = System.currentTimeMillis();
+		MasterRenderer renderer = new MasterRenderer();
 		while(!Display.isCloseRequested()){
 			//entity.increasePosition(0,0,-0.01f);
 			//entity.increaseRotation(0,0.02f,0);
@@ -66,15 +68,18 @@ public class MainGameLoop {
 			
 			
 			camera.move();
-			renderer.prepare();
-			shader.start();
-			shader.loadLight(light);
-			shader.loadViewMatrix(camera);
-			renderer.render(entity, shader);
-			shader.stop();
+			//renderer.prepare();
+			//shader.start();
+			//shader.loadLight(light);
+			//shader.loadViewMatrix(camera);
+			//renderer.render(entity, shader);
+			//shader.stop();
+			renderer.processEntity(entity);
+			renderer.render(light, camera);
 			DisplayManager.updateDisplay();
 		}
-		shader.cleanUp();
+		//shader.cleanUp();
+		renderer.cleanUp();
 		loader.cleanUp();
 		DisplayManager.closeDisplay();
 	}
