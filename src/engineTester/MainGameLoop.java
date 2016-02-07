@@ -1,5 +1,6 @@
 package engineTester;
 
+import models.OBJFileLoader;
 import models.RawModel;
 import models.TexturedModel;
 
@@ -12,7 +13,6 @@ import entities.Light;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.MasterRenderer;
-import renderEngine.ObjLoader;
 import renderEngine.EntityRenderer;
 import shaders.StaticShader;
 import terrain.Terrain;
@@ -23,19 +23,19 @@ public class MainGameLoop {
 		DisplayManager.createDisplay();
 		
 		Loader loader = new Loader();
-
-		RawModel model = ObjLoader.loadObjModel("stall", loader) ;
-		ModelTexture texture = new ModelTexture(loader.loadTexture("stallTexture"));
-		texture.setReflectivity(0.2f);
-		texture.setShineDamper(10.0f);
-		TexturedModel texturedModel = new TexturedModel(model, texture);
-		Entity entity = new Entity(texturedModel, new Vector3f(0,0,-25),0,0,0,1);
-		Light light = new Light(new Vector3f(0,2,-10), new Vector3f(1,1,1));
+		Light light = new Light(new Vector3f(10,20,10), new Vector3f(1,1,1));
 		
-		Terrain terrain = new Terrain(0,-1,loader, new ModelTexture(loader.loadTexture("grass01")));
+		Terrain terrain = new Terrain(0,0,loader, new ModelTexture(loader.loadTexture("grass01")));
 		//Terrain terrain2 = new Terrain(1,-1,loader, new ModelTexture(loader.loadTexture("stallTexture")));
 		
 		Camera camera = new Camera();
+		camera.getPosition().x = 1;
+		camera.getPosition().y = 1;
+		camera.getPosition().z = 1;
+		camera.setYaw(150.0f);
+		
+		EntityManager entityManager = new EntityManager();
+		entityManager.populateWorld(loader);
 		
 		//int frameCount = 0;
 		//long prevTime = System.currentTimeMillis();
@@ -54,8 +54,7 @@ public class MainGameLoop {
 			
 			camera.move();
 			renderer.processTerrain(terrain);
-			//renderer.processTerrain(terrain2);
-			renderer.processEntity(entity);
+			entityManager.renderAllEntities(renderer);
 			renderer.render(light, camera);
 			DisplayManager.updateDisplay();
 		}

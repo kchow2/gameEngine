@@ -8,6 +8,7 @@ import java.util.Map;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector3f;
 
 import entities.Camera;
 import entities.Entity;
@@ -23,6 +24,8 @@ public class MasterRenderer {
 	private static final float NEAR_PLANE = 0.1f;
 	private static final float FAR_PLANE = 1000f;
 	
+	private static final Vector3f SKY_COLOUR = new Vector3f(0.6f, 0.1f, 0.05f);
+	
 	private StaticShader shader = new StaticShader();
 	private EntityRenderer renderer;
 	private Matrix4f projectionMatrix;
@@ -32,15 +35,23 @@ public class MasterRenderer {
 	private TerrainShader terrainShader = new TerrainShader();
 	
 	public MasterRenderer(){
-		GL11.glEnable(GL11.GL_CULL_FACE);
-		GL11.glCullFace(GL11.GL_BACK);
+		enableCulling();
 		createProjectionMatrix();
 		renderer = new EntityRenderer(shader, projectionMatrix);
 		terrainRenderer = new TerrainRenderer(terrainShader, projectionMatrix);
 	}
 	
+	public static void enableCulling(){
+		GL11.glEnable(GL11.GL_CULL_FACE);
+		GL11.glCullFace(GL11.GL_BACK);
+	}
+	
+	public static void disableCulling(){
+		GL11.glDisable(GL11.GL_CULL_FACE);
+	}
+	
 	public void prepare(){
-		GL11.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		GL11.glClearColor(SKY_COLOUR.x, SKY_COLOUR.y, SKY_COLOUR.z, 1.0f);
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 		GL11.glEnable(GL11.GL_DEPTH_TEST);
 		GL11.glEnable(GL11.GL_DEPTH_BUFFER_BIT);
@@ -51,6 +62,7 @@ public class MasterRenderer {
 		//entities
 		shader.start();
 		shader.loadLight(sun);
+		shader.loadSkyColour(SKY_COLOUR);
 		shader.loadViewMatrix(camera);
 		renderer.render(entities);
 		shader.stop();
@@ -59,6 +71,7 @@ public class MasterRenderer {
 		//Terrain
 		terrainShader.start();
 		terrainShader.loadLight(sun);
+		terrainShader.loadSkyColour(SKY_COLOUR);
 		terrainShader.loadViewMatrix(camera);
 		terrainRenderer.render(terrains);
 		terrainShader.stop();

@@ -59,4 +59,18 @@ public class Camera {
 	public float getRoll() {
 		return roll;
 	}
+
+	public void setPitch(float pitch) {
+		this.pitch = pitch;
+	}
+
+	public void setYaw(float yaw) {
+		this.yaw = yaw;
+	}
+
+	public void setRoll(float roll) {
+		this.roll = roll;
+	}
+	
+	
 }
