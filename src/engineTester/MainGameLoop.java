@@ -23,26 +23,7 @@ public class MainGameLoop {
 		DisplayManager.createDisplay();
 		
 		Loader loader = new Loader();
-		//StaticShader shader = new StaticShader();
-		//Renderer renderer = new Renderer(shader);
-		
-		/*float vertices[] = {
-			-0.5f, 0.5f, 0,
-			-0.5f, -0.5f, 0,
-			0.5f, -0.5f, 0,
-			0.5f, 0.5f, 0f
-		};
-		int indices[] = {
-			0,1,3,
-			3,1,2
-		};
-		float textureCoords[] = {
-			0,0,
-			0,1,
-			1,1,
-			1,0
-		};*/
-		//RawModel model = loader.loadToVAO(vertices, textureCoords, indices);
+
 		RawModel model = ObjLoader.loadObjModel("stall", loader) ;
 		ModelTexture texture = new ModelTexture(loader.loadTexture("stallTexture"));
 		texture.setReflectivity(0.2f);
@@ -72,19 +53,12 @@ public class MainGameLoop {
 			
 			
 			camera.move();
-			//renderer.prepare();
-			//shader.start();
-			//shader.loadLight(light);
-			//shader.loadViewMatrix(camera);
-			//renderer.render(entity, shader);
-			//shader.stop();
 			renderer.processTerrain(terrain);
 			//renderer.processTerrain(terrain2);
 			renderer.processEntity(entity);
 			renderer.render(light, camera);
 			DisplayManager.updateDisplay();
 		}
-		//shader.cleanUp();
 		renderer.cleanUp();
 		loader.cleanUp();
 		DisplayManager.closeDisplay();
