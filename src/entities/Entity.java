@@ -6,9 +6,9 @@ import models.TexturedModel;
 
 public class Entity {
 	private TexturedModel model;
-	private Vector3f position;
-	private float rotX, rotY, rotZ;
-	private float scale;
+	protected Vector3f position;
+	protected float rotX, rotY, rotZ;
+	protected float scale;
 	
 	public Entity(TexturedModel model, Vector3f position, float rotX,
 			float rotY, float rotZ, float scale) {
@@ -29,8 +29,8 @@ public class Entity {
 	
 	public void increaseRotation(float rx, float ry, float rz){
 		this.rotX += rx;
-		this.rotX += ry;
-		this.rotX += rz;
+		this.rotY += ry;
+		this.rotZ += rz;
 	}
 
 	public TexturedModel getModel() {

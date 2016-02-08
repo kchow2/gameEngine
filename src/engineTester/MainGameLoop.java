@@ -1,5 +1,6 @@
 package engineTester;
 
+import models.ModelData;
 import models.OBJFileLoader;
 import models.RawModel;
 import models.TexturedModel;
@@ -10,6 +11,8 @@ import org.lwjgl.util.vector.Vector3f;
 import entities.Camera;
 import entities.Entity;
 import entities.Light;
+import entities.Player;
+import entities.Camera;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.MasterRenderer;
@@ -17,43 +20,45 @@ import renderEngine.EntityRenderer;
 import shaders.StaticShader;
 import terrain.Terrain;
 import textures.ModelTexture;
+import textures.TerrainTexture;
+import textures.TerrainTexturePack;
 
 public class MainGameLoop {
 	public static void main(String[] args){
 		DisplayManager.createDisplay();
 		
 		Loader loader = new Loader();
-		Light light = new Light(new Vector3f(10,20,10), new Vector3f(1,1,1));
+		Light light = new Light(new Vector3f(100,1000,100), new Vector3f(1,1,1));
 		
-		Terrain terrain = new Terrain(0,0,loader, new ModelTexture(loader.loadTexture("grass01")));
+		TerrainTexture backgroundTexture = new TerrainTexture(loader.loadTexture("grass01"));
+		TerrainTexture rTexture = new TerrainTexture(loader.loadTexture("mud"));
+		TerrainTexture gTexture = new TerrainTexture(loader.loadTexture("grassFlowers"));
+		TerrainTexture bTexture = new TerrainTexture(loader.loadTexture("path"));
+		TerrainTexture blendMap = new TerrainTexture(loader.loadTexture("blendMap"));
+		
+		TerrainTexturePack texturePack = new TerrainTexturePack(
+				backgroundTexture, rTexture, gTexture, bTexture);
+
+		Terrain terrain = new Terrain(0, 0, loader, texturePack, blendMap);
 		//Terrain terrain2 = new Terrain(1,-1,loader, new ModelTexture(loader.loadTexture("stallTexture")));
 		
-		Camera camera = new Camera();
-		camera.getPosition().x = 1;
-		camera.getPosition().y = 1;
-		camera.getPosition().z = 1;
-		camera.setYaw(150.0f);
+		//Player
+		ModelData modelData = OBJFileLoader.loadOBJ("player");
+		RawModel playerModelRaw = loader.loadToVAO(modelData.getVertices(), modelData.getTextureCoords(), modelData.getNormals(), modelData.getIndices());
+		TexturedModel playerModel = new TexturedModel(playerModelRaw, new ModelTexture(loader.loadTexture("player")));
+		Player player = new Player(playerModel, new Vector3f(10,0,10),0,135.0f,0,1.0f);
+		Camera camera = new Camera(player);
 		
 		EntityManager entityManager = new EntityManager();
 		entityManager.populateWorld(loader);
 		
-		//int frameCount = 0;
-		//long prevTime = System.currentTimeMillis();
 		MasterRenderer renderer = new MasterRenderer();
 		while(!Display.isCloseRequested()){
-			//entity.increasePosition(0,0,-0.01f);
-			//entity.increaseRotation(0,0.02f,0);
-			/*frameCount++;
-			long currentTime = System.currentTimeMillis();
-			if(currentTime - prevTime >= 1000){
-				System.out.println("FPS: "+frameCount);
-				frameCount = 0;
-				prevTime = currentTime;
-			}*/
-			
 			
 			camera.move();
+			player.move();
 			renderer.processTerrain(terrain);
+			renderer.processEntity(player);
 			entityManager.renderAllEntities(renderer);
 			renderer.render(light, camera);
 			DisplayManager.updateDisplay();
