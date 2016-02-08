@@ -10,6 +10,7 @@ import renderEngine.DisplayManager;
 public class Player extends Entity {
 	
 	private static final float TERRAIN_HEIGHT = 0;
+	private static final float SPRINT_SPEED = 50;
 	private static final float RUN_SPEED = 20;
 	private static final float STRAFE_SPEED = 15;
 	private static final float TURN_SPEED = 160;
@@ -57,7 +58,12 @@ public class Player extends Entity {
 	private void checkInputs(){
 		//FORWARDS
 		if(Keyboard.isKeyDown(Keyboard.KEY_W)){
-			this.currentForwardSpeed = RUN_SPEED;
+			if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
+				this.currentForwardSpeed = SPRINT_SPEED;
+			}
+			else{
+				this.currentForwardSpeed = RUN_SPEED;
+			}
 		}
 		else if(Keyboard.isKeyDown(Keyboard.KEY_S)){
 			this.currentForwardSpeed = -RUN_SPEED;
@@ -68,10 +74,10 @@ public class Player extends Entity {
 		
 		//ROTATE
 		if(Keyboard.isKeyDown(Keyboard.KEY_Q)){
-			this.currentTurnSpeed = -TURN_SPEED;
+			this.currentTurnSpeed = TURN_SPEED;
 		}
 		else if(Keyboard.isKeyDown(Keyboard.KEY_E)){
-			this.currentTurnSpeed = TURN_SPEED;
+			this.currentTurnSpeed = -TURN_SPEED;
 		}
 		else{
 			this.currentTurnSpeed = 0;

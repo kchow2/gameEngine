@@ -32,30 +32,6 @@ public class Camera {
 	public Vector3f getPosition() {
 		return position;
 	}
-
-	public float getPitch() {
-		return pitch;
-	}
-
-	public float getYaw() {
-		return yaw;
-	}
-
-	public float getRoll() {
-		return roll;
-	}
-
-	public void setPitch(float pitch) {
-		this.pitch = pitch;
-	}
-
-	public void setYaw(float yaw) {
-		this.yaw = yaw;
-	}
-
-	public void setRoll(float roll) {
-		this.roll = roll;
-	}
 	
 	private float calculateHorizontalDistance(){
 		return (float)(distanceFromPlayer * Math.cos(Math.toRadians(pitch)));
@@ -92,6 +68,34 @@ public class Camera {
 			float angleChange = Mouse.getDX() * 0.3f;
 			angleAroundPlayer -= angleChange;
 		}
+	}
+
+	public float getDistanceFromPlayer() {
+		return distanceFromPlayer;
+	}
+
+	public void setDistanceFromPlayer(float distanceFromPlayer) {
+		this.distanceFromPlayer = distanceFromPlayer;
+	}
+
+	public float getAngleAroundPlayer() {
+		return angleAroundPlayer;
+	}
+
+	public void setAngleAroundPlayer(float angleAroundPlayer) {
+		this.angleAroundPlayer = angleAroundPlayer;
+	}
+
+	public void setPitch(float pitch) {
+		this.pitch = pitch;
+	}
+
+	public float getPitch() {
+		return pitch;
+	}
+
+	public float getYaw() {
+		return yaw;
 	}
 	
 	

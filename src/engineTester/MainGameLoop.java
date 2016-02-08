@@ -39,15 +39,18 @@ public class MainGameLoop {
 		TerrainTexturePack texturePack = new TerrainTexturePack(
 				backgroundTexture, rTexture, gTexture, bTexture);
 
-		Terrain terrain = new Terrain(0, 0, loader, texturePack, blendMap);
+		Terrain terrain = new Terrain(0, 0, loader, texturePack, blendMap, "heightMap");
 		//Terrain terrain2 = new Terrain(1,-1,loader, new ModelTexture(loader.loadTexture("stallTexture")));
 		
 		//Player
 		ModelData modelData = OBJFileLoader.loadOBJ("player");
 		RawModel playerModelRaw = loader.loadToVAO(modelData.getVertices(), modelData.getTextureCoords(), modelData.getNormals(), modelData.getIndices());
 		TexturedModel playerModel = new TexturedModel(playerModelRaw, new ModelTexture(loader.loadTexture("player")));
-		Player player = new Player(playerModel, new Vector3f(10,0,10),0,135.0f,0,1.0f);
+		Player player = new Player(playerModel, new Vector3f(100,0,100),0,135.0f,0,1.0f);
 		Camera camera = new Camera(player);
+		camera.setDistanceFromPlayer(20.0f);
+		camera.setAngleAroundPlayer(0.0f);
+		camera.setPitch(15.0f);
 		
 		EntityManager entityManager = new EntityManager();
 		entityManager.populateWorld(loader);
