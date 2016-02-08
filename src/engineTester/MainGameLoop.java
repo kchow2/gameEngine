@@ -53,13 +53,13 @@ public class MainGameLoop {
 		camera.setPitch(15.0f);
 		
 		EntityManager entityManager = new EntityManager();
-		entityManager.populateWorld(loader);
+		entityManager.populateWorld(loader, terrain);
 		
 		MasterRenderer renderer = new MasterRenderer();
 		while(!Display.isCloseRequested()){
 			
 			camera.move();
-			player.move();
+			player.move(terrain);
 			renderer.processTerrain(terrain);
 			renderer.processEntity(player);
 			entityManager.renderAllEntities(renderer);

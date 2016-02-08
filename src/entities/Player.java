@@ -6,6 +6,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.vector.Vector3f;
 
 import renderEngine.DisplayManager;
+import terrain.Terrain;
 
 public class Player extends Entity {
 	
@@ -30,7 +31,7 @@ public class Player extends Entity {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public void move(){
+	public void move(Terrain terrain){
 		checkInputs();
 		super.increaseRotation(0, currentTurnSpeed*DisplayManager.getFrameTimeSeconds(), 0);
 		
@@ -46,10 +47,11 @@ public class Player extends Entity {
 		float dy = verticalDistance;
 		super.increasePosition(dx, dy, dz);
 		
-		if(super.getPosition().y < TERRAIN_HEIGHT){
+		float terrainHeight = terrain.getTerrainHeight(getPosition().x, getPosition().z);
+		if(super.getPosition().y < terrainHeight){
 			currentVerticalSpeed = 0;
 			isInAir = false;
-			this.getPosition().y = TERRAIN_HEIGHT;
+			this.getPosition().y = terrainHeight;
 		}
 		
 		currentVerticalSpeed -= GRAVITY * DisplayManager.getFrameTimeSeconds();
@@ -85,10 +87,10 @@ public class Player extends Entity {
 		
 		//STRAFE
 		if(Keyboard.isKeyDown(Keyboard.KEY_D)){
-			currentStrafeSpeed = RUN_SPEED;
+			currentStrafeSpeed = -RUN_SPEED;
 		}
 		else if(Keyboard.isKeyDown(Keyboard.KEY_A)){
-			currentStrafeSpeed = -RUN_SPEED;
+			currentStrafeSpeed = RUN_SPEED;
 		}
 		else{
 			currentStrafeSpeed = 0;

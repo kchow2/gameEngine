@@ -8,6 +8,7 @@ import org.lwjgl.util.vector.Vector3f;
 
 import renderEngine.Loader;
 import renderEngine.MasterRenderer;
+import terrain.Terrain;
 import textures.ModelTexture;
 import models.ModelData;
 import models.OBJFileLoader;
@@ -30,7 +31,7 @@ public class EntityManager {
 	}
 	
 	//populates the world with a bunch of random shit like trees, ferns, etc
-	public void populateWorld(Loader loader){
+	public void populateWorld(Loader loader, Terrain terrain){
 		final int NUM_FERNS = 50;
 		final int NUM_TREES = 25;
 		final int NUM_GRASS = 50;
@@ -81,14 +82,17 @@ public class EntityManager {
 		
 		//spread them out over the map
 		for(Entity e:entities){
-			randomizeEntityPosition(e, XMIN, ZMIN, MAPSIZE);
+			randomizeEntityPosition(e, XMIN, ZMIN, MAPSIZE, terrain);
 		}
 	}
 	
-	private void randomizeEntityPosition(Entity entity, float xMin, float zMin, float mapSize){
+	private void randomizeEntityPosition(Entity entity, float xMin, float zMin, float mapSize, Terrain terrain){
 		Random r = new Random();
-		entity.getPosition().x = (float)(r.nextDouble()*mapSize+xMin);
-		entity.getPosition().z = (float)(r.nextDouble()*mapSize+zMin);
+		float x = (float)(r.nextDouble()*mapSize+xMin);
+		float z = (float)(r.nextDouble()*mapSize+zMin);
+		entity.getPosition().x = x;
+		entity.getPosition().y = terrain.getTerrainHeight(x,z);
+		entity.getPosition().z = z;
 		entity.setRotY((float)r.nextDouble()*360.0f);
 	}
 	
