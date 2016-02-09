@@ -1,11 +1,15 @@
 package engineTester;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import models.ModelData;
 import models.OBJFileLoader;
 import models.RawModel;
 import models.TexturedModel;
 
 import org.lwjgl.opengl.Display;
+import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
 import entities.Camera;
@@ -13,6 +17,8 @@ import entities.Entity;
 import entities.Light;
 import entities.Player;
 import entities.Camera;
+import guis.GuiRenderer;
+import guis.GuiTexture;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.MasterRenderer;
@@ -55,6 +61,11 @@ public class MainGameLoop {
 		EntityManager entityManager = new EntityManager();
 		entityManager.populateWorld(loader, terrain);
 		
+		List<GuiTexture> guis = new ArrayList<GuiTexture>();
+		GuiTexture gui = new GuiTexture(loader.loadTexture("gui"), new Vector2f(0.5f,0.5f), new Vector2f(0.25f,0.25f));
+		guis.add(gui);
+		GuiRenderer guiRenderer = new GuiRenderer(loader);
+		
 		MasterRenderer renderer = new MasterRenderer();
 		while(!Display.isCloseRequested()){
 			
@@ -64,9 +75,11 @@ public class MainGameLoop {
 			renderer.processEntity(player);
 			entityManager.renderAllEntities(renderer);
 			renderer.render(light, camera);
+			guiRenderer.render(guis);
 			DisplayManager.updateDisplay();
 		}
 		renderer.cleanUp();
+		guiRenderer.cleanUp();
 		loader.cleanUp();
 		DisplayManager.closeDisplay();
 	}
