@@ -34,7 +34,11 @@ public class MainGameLoop {
 		DisplayManager.createDisplay();
 		
 		Loader loader = new Loader();
-		Light light = new Light(new Vector3f(100,1000,100), new Vector3f(1,1,1));
+		//Light light = new Light(new Vector3f(100,1000,100), new Vector3f(1,1,1));
+		//Light light2 = new Light(new Vector3f(200,1000,200), new Vector3f(0.0f,1,1));
+		List<Light> lights = new ArrayList<Light>();
+		//lights.add(light);
+		//lights.add(light2);
 		
 		TerrainTexture backgroundTexture = new TerrainTexture(loader.loadTexture("grass01"));
 		TerrainTexture rTexture = new TerrainTexture(loader.loadTexture("mud"));
@@ -74,7 +78,7 @@ public class MainGameLoop {
 			renderer.processTerrain(terrain);
 			renderer.processEntity(player);
 			entityManager.renderAllEntities(renderer);
-			renderer.render(light, camera);
+			renderer.render(lights, camera);
 			guiRenderer.render(guis);
 			DisplayManager.updateDisplay();
 		}

@@ -24,7 +24,7 @@ public class MasterRenderer {
 	private static final float NEAR_PLANE = 0.1f;
 	private static final float FAR_PLANE = 1000f;
 	
-	private static final Vector3f SKY_COLOUR = new Vector3f(0.6f, 0.1f, 0.05f);
+	private static final Vector3f SKY_COLOUR = new Vector3f(0.7f, 0.2f, 0.05f);
 	
 	private StaticShader shader = new StaticShader();
 	private EntityRenderer renderer;
@@ -57,11 +57,11 @@ public class MasterRenderer {
 		GL11.glEnable(GL11.GL_DEPTH_BUFFER_BIT);
 	}
 	
-	public void render(Light sun, Camera camera){
+	public void render(List<Light> lights, Camera camera){
 		prepare();
 		//entities
 		shader.start();
-		shader.loadLight(sun);
+		shader.loadLights(lights);
 		shader.loadSkyColour(SKY_COLOUR);
 		shader.loadViewMatrix(camera);
 		renderer.render(entities);
@@ -70,7 +70,7 @@ public class MasterRenderer {
 		
 		//Terrain
 		terrainShader.start();
-		terrainShader.loadLight(sun);
+		terrainShader.loadLights(lights);
 		terrainShader.loadSkyColour(SKY_COLOUR);
 		terrainShader.loadViewMatrix(camera);
 		terrainRenderer.render(terrains);
