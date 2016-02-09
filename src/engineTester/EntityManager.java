@@ -45,12 +45,15 @@ public class EntityManager {
 		RawModel modelFern = loader.loadToVAO(modelFernData.getVertices(), 
 				modelFernData.getTextureCoords(), modelFernData.getNormals(),
 				modelFernData.getIndices());
-		ModelTexture fernTexture = new ModelTexture(loader.loadTexture("fern"));
-		fernTexture.setTransparent(true);
-		fernTexture.setUseFakeLighting(true);
-		TexturedModel modelFernTextured = new TexturedModel(modelFern, fernTexture);
+		ModelTexture fernAtlas = new ModelTexture(loader.loadTexture("fernAtlas"));
+		fernAtlas.setTransparent(true);
+		fernAtlas.setUseFakeLighting(true);
+		fernAtlas.setNumberOfRows(2);
+		TexturedModel modelFernTextured = new TexturedModel(modelFern, fernAtlas);
+		Random rand = new Random();
 		for(int i = 0; i < NUM_FERNS; i++){
 			Entity e = new Entity(modelFernTextured, new Vector3f(), 0, 0, 0, 1.0f);
+			e.setTextureOffset(rand.nextInt()%4);
 			entities.add(e);
 		}
 		
@@ -62,7 +65,7 @@ public class EntityManager {
 		ModelTexture treeTexture = new ModelTexture(loader.loadTexture("tree"));
 		TexturedModel modelTreeTextured = new TexturedModel(modelTree, treeTexture);
 		for(int i = 0; i < NUM_TREES; i++){
-			Entity e = new Entity(modelTreeTextured, new Vector3f(), 0, 0, 0, 1.0f);
+			Entity e = new Entity(modelTreeTextured, new Vector3f(), 0, 0, 0, 4.0f);
 			entities.add(e);
 		}
 		
