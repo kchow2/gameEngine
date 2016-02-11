@@ -9,5 +9,6 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="C:/Users/Kevin/Desktop/LWJGL Dev/gameEngine/lib/jar/lwjgl_util.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Kevin/Desktop/LWJGL Dev/gameEngine/lib/jar/slick-util.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Kevin/Desktop/LWJGL Dev/gameEngine/lib/jar/PNGDecoder.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

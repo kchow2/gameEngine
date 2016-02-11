@@ -73,7 +73,7 @@ public class MainGameLoop {
 		guis.add(gui);
 		GuiRenderer guiRenderer = new GuiRenderer(loader);
 		
-		MasterRenderer renderer = new MasterRenderer();
+		MasterRenderer renderer = new MasterRenderer(loader);
 		while(!Display.isCloseRequested()){
 			
 			camera.move();

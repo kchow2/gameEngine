@@ -16,6 +16,7 @@ import entities.Light;
 import models.TexturedModel;
 import shaders.StaticShader;
 import shaders.TerrainShader;
+import skybox.SkyboxRenderer;
 import terrain.Terrain;
 
 public class MasterRenderer {
@@ -34,11 +35,14 @@ public class MasterRenderer {
 	private TerrainRenderer terrainRenderer;
 	private TerrainShader terrainShader = new TerrainShader();
 	
-	public MasterRenderer(){
+	private SkyboxRenderer skyboxRenderer;
+	
+	public MasterRenderer(Loader loader){
 		enableCulling();
 		createProjectionMatrix();
 		renderer = new EntityRenderer(shader, projectionMatrix);
 		terrainRenderer = new TerrainRenderer(terrainShader, projectionMatrix);
+		skyboxRenderer = new SkyboxRenderer(loader, projectionMatrix);
 	}
 	
 	public static void enableCulling(){
@@ -76,6 +80,8 @@ public class MasterRenderer {
 		terrainRenderer.render(terrains);
 		terrainShader.stop();
 		terrains.clear();
+		
+		skyboxRenderer.render(camera, SKY_COLOUR);
 	}
 	
 	public void processTerrain(Terrain terrain){
