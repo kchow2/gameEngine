@@ -24,7 +24,7 @@ public class MasterRenderer {
 	private static final float NEAR_PLANE = 0.1f;
 	private static final float FAR_PLANE = 1000f;
 	
-	private static final Vector3f SKY_COLOUR = new Vector3f(0.7f, 0.2f, 0.05f);
+	private static final Vector3f SKY_COLOUR = new Vector3f(0.7f, 0.7f, 0.7f);
 	
 	private StaticShader shader = new StaticShader();
 	private EntityRenderer renderer;

@@ -34,11 +34,14 @@ public class MainGameLoop {
 		DisplayManager.createDisplay();
 		
 		Loader loader = new Loader();
-		//Light light = new Light(new Vector3f(100,1000,100), new Vector3f(1,1,1));
+		//Light light = 
 		//Light light2 = new Light(new Vector3f(200,1000,200), new Vector3f(0.0f,1,1));
 		List<Light> lights = new ArrayList<Light>();
-		//lights.add(light);
-		//lights.add(light2);
+		lights.add(new Light(new Vector3f(100,1000,100), new Vector3f(0.4f,0.4f,0.4f), new Vector3f(1,0,0)));
+		lights.add(new Light(new Vector3f(70,20,50), new Vector3f(1,0,0), new Vector3f(1.0f,0.01f,0.002f)));
+		lights.add(new Light(new Vector3f(120,20,90), new Vector3f(0,0,1), new Vector3f(1.0f,0.01f,0.002f)));
+		Light playerLight = new Light(new Vector3f(0,0,0), new Vector3f(0.7f,0.7f,0.7f),  new Vector3f(0.5f,0.005f,0.009f));
+		lights.add(playerLight);
 		
 		TerrainTexture backgroundTexture = new TerrainTexture(loader.loadTexture("grass01"));
 		TerrainTexture rTexture = new TerrainTexture(loader.loadTexture("mud"));
@@ -75,6 +78,9 @@ public class MainGameLoop {
 			
 			camera.move();
 			player.move(terrain);
+			playerLight.getPosition().x = player.getPosition().x;
+			playerLight.getPosition().y = player.getPosition().y+7.5f;
+			playerLight.getPosition().z = player.getPosition().z;
 			renderer.processTerrain(terrain);
 			renderer.processEntity(player);
 			entityManager.renderAllEntities(renderer);
