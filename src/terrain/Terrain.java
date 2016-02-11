@@ -24,6 +24,7 @@ public class Terrain {
 	
 	private float x,z;
 	private float heights[][];
+	private Vector3f terrainNormals[][];
 	private RawModel model;
 	private TerrainTexturePack texturePack;
 	private TerrainTexture blendMap;
@@ -86,6 +87,22 @@ public class Terrain {
 			return Maths.barycentricInterpolate(p1, p2, p3, pos);
 		}
 	}
+	
+	public Vector3f getTerrainNormal(float worldX, float worldZ){
+		float terrainX = worldX - this.x;
+		float terrainZ = worldZ - this.z;
+		
+		float gridSquareSize = SIZE / (float) (heights.length - 1);
+		int gridX = (int) Math.floor(terrainX / gridSquareSize);
+		int gridZ = (int) Math.floor(terrainZ / gridSquareSize);
+		
+		if(gridX >= heights.length - 1 || gridZ >= heights.length - 1 || gridX < 0 || gridZ < 0){
+			return null;
+		}
+		else{
+			return terrainNormals[gridX][gridZ];
+		}
+	}
 
 	private RawModel generateTerrain(Loader loader, String heightMap){
 		
@@ -97,6 +114,7 @@ public class Terrain {
 		}
 		int VERTEX_COUNT = image.getHeight();
 		heights = new float[VERTEX_COUNT][VERTEX_COUNT];
+		terrainNormals = new Vector3f[VERTEX_COUNT][VERTEX_COUNT];
 		int count = VERTEX_COUNT * VERTEX_COUNT;
 		float[] vertices = new float[count * 3];
 		float[] normals = new float[count * 3];
@@ -114,6 +132,7 @@ public class Terrain {
 				normals[vertexPointer*3] = normal.x;
 				normals[vertexPointer*3+1] = normal.y;
 				normals[vertexPointer*3+2] = normal.z;
+				terrainNormals[j][i] = normal;
 				textureCoords[vertexPointer*2] = (float)j/((float)VERTEX_COUNT - 1);
 				textureCoords[vertexPointer*2+1] = (float)i/((float)VERTEX_COUNT - 1);
 				vertexPointer++;

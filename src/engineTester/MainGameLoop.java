@@ -28,12 +28,14 @@ import terrain.Terrain;
 import textures.ModelTexture;
 import textures.TerrainTexture;
 import textures.TerrainTexturePack;
+import toolbox.MousePicker;
 
 public class MainGameLoop {
 	public static void main(String[] args){
 		DisplayManager.createDisplay();
 		
 		Loader loader = new Loader();
+		MasterRenderer renderer = new MasterRenderer(loader);
 		//Light light = 
 		//Light light2 = new Light(new Vector3f(200,1000,200), new Vector3f(0.0f,1,1));
 		List<Light> lights = new ArrayList<Light>();
@@ -73,14 +75,26 @@ public class MainGameLoop {
 		guis.add(gui);
 		GuiRenderer guiRenderer = new GuiRenderer(loader);
 		
-		MasterRenderer renderer = new MasterRenderer(loader);
+		MousePicker mousePicker = new MousePicker(camera, renderer.getProjectionMatrix(), terrain);
+
 		while(!Display.isCloseRequested()){
 			
 			camera.move();
 			player.move(terrain);
-			playerLight.getPosition().x = player.getPosition().x;
-			playerLight.getPosition().y = player.getPosition().y+7.5f;
-			playerLight.getPosition().z = player.getPosition().z;
+			
+			mousePicker.update();
+			
+			Vector3f mousePoint = mousePicker.getCurrentTerrainPoint();
+			if(mousePoint != null){
+				Vector3f terrainNormal = terrain.getTerrainNormal(mousePoint.x, mousePoint.z);
+				if(terrainNormal != null){
+					Vector3f lightPos = new Vector3f(mousePoint.x+3*terrainNormal.x, mousePoint.y+3*terrainNormal.y, mousePoint.z+3*terrainNormal.z);
+					playerLight.setPosition(lightPos);
+				}
+			}
+			//playerLight.getPosition().x = player.getPosition().x;
+			//playerLight.getPosition().y = player.getPosition().y+7.5f;
+			//playerLight.getPosition().z = player.getPosition().z;
 			renderer.processTerrain(terrain);
 			renderer.processEntity(player);
 			entityManager.renderAllEntities(renderer);
