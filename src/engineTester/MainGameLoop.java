@@ -46,7 +46,8 @@ public class MainGameLoop {
 		//Light light = 
 		//Light light2 = new Light(new Vector3f(200,1000,200), new Vector3f(0.0f,1,1));
 		List<Light> lights = new ArrayList<Light>();
-		lights.add(new Light(new Vector3f(100,1000,100), new Vector3f(0.4f,0.4f,0.4f), new Vector3f(1,0,0)));
+		Light sun = new Light(new Vector3f(300,100,300), new Vector3f(0.8f,0.8f,0.8f), new Vector3f(1,0,0));
+		lights.add(sun);
 		lights.add(new Light(new Vector3f(70,20,50), new Vector3f(1,0,0), new Vector3f(1.0f,0.01f,0.002f)));
 		lights.add(new Light(new Vector3f(120,20,90), new Vector3f(0,0,1), new Vector3f(1.0f,0.01f,0.002f)));
 		Light playerLight = new Light(new Vector3f(0,0,0), new Vector3f(0.7f,0.7f,0.7f),  new Vector3f(0.5f,0.005f,0.009f));
@@ -124,7 +125,7 @@ public class MainGameLoop {
 			GL11.glDisable(GL30.GL_CLIP_DISTANCE0);
 			
 			renderer.renderScene(entityManager.getEntities(), terrains, lights, camera, new Vector4f(0,-1,0,999999));
-			waterRenderer.render(waters,  camera);
+			waterRenderer.render(waters,  camera, sun);
 			guiRenderer.render(guis);
 			DisplayManager.updateDisplay();
 		}

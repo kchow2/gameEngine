@@ -100,7 +100,7 @@ private static final float SIZE = 500f;
 		GL13.glActiveTexture(GL13.GL_TEXTURE1);
 		GL11.glBindTexture(GL13.GL_TEXTURE_CUBE_MAP, nightTextureID);
 		
-		time += DisplayManager.getFrameTimeSeconds()*1000;
+		time += DisplayManager.getFrameTimeSeconds()*20;
 		time %= 24000;
 		shader.loadBlendFactor(calculateBlendFactor(time));
 	}
