@@ -24,6 +24,14 @@ public class EntityManager {
 		
 	}
 	
+	public List<Entity> getEntities(){
+		return entities;
+	}
+	
+	public void addEntity(Entity e){
+		entities.add(e);
+	}
+	
 	public void renderAllEntities(MasterRenderer renderer){
 		for(Entity e:entities){
 			renderer.processEntity(e);
@@ -32,9 +40,9 @@ public class EntityManager {
 	
 	//populates the world with a bunch of random shit like trees, ferns, etc
 	public void populateWorld(Loader loader, Terrain terrain){
-		final int NUM_FERNS = 50;
-		final int NUM_TREES = 25;
-		final int NUM_GRASS = 50;
+		final int NUM_FERNS = 100;
+		final int NUM_TREES = 50;
+		final int NUM_GRASS = 100;
 		
 		final float XMIN = 0;
 		final float ZMIN = 0;

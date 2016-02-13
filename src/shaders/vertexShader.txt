@@ -19,11 +19,18 @@ uniform float useFakeLighting;
 uniform float numberOfRows;
 uniform vec2 textureOffset;
 
+uniform vec4 clippingPlane;
+
 const float fogDensity = 0.003;
 const float fogGradient = 1.2;
 
+
+
 void main(void){
     vec4 worldPosition = transformationMatrix*vec4(position,1.0);
+    
+    gl_ClipDistance[0] = dot(worldPosition, clippingPlane);
+    
     vec4 positionRelativeToCam = viewMatrix * worldPosition;
     gl_Position = projectionMatrix*positionRelativeToCam;
     pass_textureCoords = (textureCoords/numberOfRows) + textureOffset;

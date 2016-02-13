@@ -9,8 +9,11 @@ import models.RawModel;
 import models.TexturedModel;
 
 import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector4f;
 
 import entities.Camera;
 import entities.Entity;
@@ -29,6 +32,10 @@ import textures.ModelTexture;
 import textures.TerrainTexture;
 import textures.TerrainTexturePack;
 import toolbox.MousePicker;
+import water.WaterFrameBuffers;
+import water.WaterRenderer;
+import water.WaterShader;
+import water.WaterTile;
 
 public class MainGameLoop {
 	public static void main(String[] args){
@@ -55,6 +62,8 @@ public class MainGameLoop {
 				backgroundTexture, rTexture, gTexture, bTexture);
 
 		Terrain terrain = new Terrain(0, 0, loader, texturePack, blendMap, "heightMap");
+		List<Terrain> terrains = new ArrayList<Terrain>();
+		terrains.add(terrain);
 		//Terrain terrain2 = new Terrain(1,-1,loader, new ModelTexture(loader.loadTexture("stallTexture")));
 		
 		//Player
@@ -69,6 +78,7 @@ public class MainGameLoop {
 		
 		EntityManager entityManager = new EntityManager();
 		entityManager.populateWorld(loader, terrain);
+		entityManager.addEntity(player);
 		
 		List<GuiTexture> guis = new ArrayList<GuiTexture>();
 		GuiTexture gui = new GuiTexture(loader.loadTexture("gui"), new Vector2f(0.5f,0.5f), new Vector2f(0.25f,0.25f));
@@ -77,13 +87,20 @@ public class MainGameLoop {
 		
 		MousePicker mousePicker = new MousePicker(camera, renderer.getProjectionMatrix(), terrain);
 
+		WaterFrameBuffers fbos = new WaterFrameBuffers();
+		List<WaterTile> waters = new ArrayList<WaterTile>();
+		WaterShader waterShader = new  WaterShader();
+		WaterRenderer waterRenderer = new WaterRenderer(loader, waterShader, renderer.getProjectionMatrix(), fbos);
+		WaterTile water = new WaterTile(100,100,-5);
+		waters.add(water);
+		
 		while(!Display.isCloseRequested()){
 			
 			camera.move();
 			player.move(terrain);
 			
+			//mousepicker + light following mouse
 			mousePicker.update();
-			
 			Vector3f mousePoint = mousePicker.getCurrentTerrainPoint();
 			if(mousePoint != null){
 				Vector3f terrainNormal = terrain.getTerrainNormal(mousePoint.x, mousePoint.z);
@@ -92,17 +109,29 @@ public class MainGameLoop {
 					playerLight.setPosition(lightPos);
 				}
 			}
-			//playerLight.getPosition().x = player.getPosition().x;
-			//playerLight.getPosition().y = player.getPosition().y+7.5f;
-			//playerLight.getPosition().z = player.getPosition().z;
-			renderer.processTerrain(terrain);
-			renderer.processEntity(player);
-			entityManager.renderAllEntities(renderer);
-			renderer.render(lights, camera);
+			
+			GL11.glEnable(GL30.GL_CLIP_DISTANCE0);
+			fbos.bindReflectionFrameBuffer();
+			float distance = 2*(camera.getPosition().y - water.getHeight());
+			camera.getPosition().y -= distance;
+			camera.invertPitch();
+			renderer.renderScene(entityManager.getEntities(), terrains, lights, camera, new Vector4f(0,1,0,-water.getHeight()));
+			camera.getPosition().y += distance;
+			camera.invertPitch();
+			fbos.bindRefractionFrameBuffer();
+			renderer.renderScene(entityManager.getEntities(), terrains, lights, camera, new Vector4f(0,-1,0,water.getHeight()));
+			fbos.unbindCurrentFrameBuffer();
+			GL11.glDisable(GL30.GL_CLIP_DISTANCE0);
+			
+			renderer.renderScene(entityManager.getEntities(), terrains, lights, camera, new Vector4f(0,-1,0,999999));
+			waterRenderer.render(waters,  camera);
 			guiRenderer.render(guis);
 			DisplayManager.updateDisplay();
 		}
+		
 		renderer.cleanUp();
+		fbos.cleanUp();
+		waterShader.cleanUp();
 		guiRenderer.cleanUp();
 		loader.cleanUp();
 		DisplayManager.closeDisplay();

@@ -9,6 +9,7 @@ import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector4f;
 
 import entities.Camera;
 import entities.Entity;
@@ -54,6 +55,16 @@ public class MasterRenderer {
 		GL11.glDisable(GL11.GL_CULL_FACE);
 	}
 	
+	public void renderScene(List<Entity> entities, List<Terrain> terrains, List<Light> lights, Camera camera, Vector4f clipPlane){
+		for(Terrain terrain:terrains){
+			processTerrain(terrain);
+		}
+		for(Entity entity:entities){
+			processEntity(entity);
+		}
+		render(lights,camera, clipPlane);
+	}
+	
 	public void prepare(){
 		GL11.glClearColor(SKY_COLOUR.x, SKY_COLOUR.y, SKY_COLOUR.z, 1.0f);
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
@@ -61,10 +72,11 @@ public class MasterRenderer {
 		GL11.glEnable(GL11.GL_DEPTH_BUFFER_BIT);
 	}
 	
-	public void render(List<Light> lights, Camera camera){
+	public void render(List<Light> lights, Camera camera, Vector4f clipPlane){
 		prepare();
 		//entities
 		shader.start();
+		shader.loadClippingPlane(clipPlane);
 		shader.loadLights(lights);
 		shader.loadSkyColour(SKY_COLOUR);
 		shader.loadViewMatrix(camera);
@@ -74,6 +86,7 @@ public class MasterRenderer {
 		
 		//Terrain
 		terrainShader.start();
+		terrainShader.loadClippingPlane(clipPlane);
 		terrainShader.loadLights(lights);
 		terrainShader.loadSkyColour(SKY_COLOUR);
 		terrainShader.loadViewMatrix(camera);

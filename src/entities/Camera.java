@@ -85,6 +85,10 @@ public class Camera {
 	public void setAngleAroundPlayer(float angleAroundPlayer) {
 		this.angleAroundPlayer = angleAroundPlayer;
 	}
+	
+	public void invertPitch(){
+		pitch = -pitch;
+	}
 
 	public void setPitch(float pitch) {
 		this.pitch = pitch;
