@@ -16,6 +16,7 @@ import models.RawModel;
 import models.TexturedModel;
 import entities.Entity;
 
+//this class is responsible for all stationary entities in the game
 public class EntityManager {
 	
 	private static List<Entity> entities = new ArrayList<Entity>();

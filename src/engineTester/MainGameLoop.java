@@ -18,6 +18,7 @@ import org.lwjgl.util.vector.Vector4f;
 import entities.Camera;
 import entities.Entity;
 import entities.Light;
+import entities.MobileEntity;
 import entities.Player;
 import entities.Camera;
 import guis.GuiRenderer;
@@ -81,9 +82,12 @@ public class MainGameLoop {
 		entityManager.populateWorld(loader, terrain);
 		entityManager.addEntity(player);
 		
+		MobileEntityManager mobileEntityManager = new MobileEntityManager();
+		mobileEntityManager.populateWorld(entityManager, loader, terrain);		
+		
 		List<GuiTexture> guis = new ArrayList<GuiTexture>();
-		GuiTexture gui = new GuiTexture(loader.loadTexture("gui"), new Vector2f(0.5f,0.5f), new Vector2f(0.25f,0.25f));
-		guis.add(gui);
+		GuiTexture targetingReticle = new GuiTexture(loader.loadTexture("target"), new Vector2f(0f,0f), new Vector2f(0.1f,0.1f));
+		guis.add(targetingReticle);
 		GuiRenderer guiRenderer = new GuiRenderer(loader);
 		
 		MousePicker mousePicker = new MousePicker(camera, renderer.getProjectionMatrix(), terrain);
@@ -97,8 +101,12 @@ public class MainGameLoop {
 		
 		while(!Display.isCloseRequested()){
 			
+			//update player+camera
 			camera.move();
-			player.move(terrain);
+			player.move(terrain, mobileEntityManager);
+			
+			//update entities
+			mobileEntityManager.updateEntities(terrain);
 			
 			//mousepicker + light following mouse
 			mousePicker.update();
@@ -126,6 +134,22 @@ public class MainGameLoop {
 			
 			renderer.renderScene(entityManager.getEntities(), terrains, lights, camera, new Vector4f(0,-1,0,999999));
 			waterRenderer.render(waters,  camera, sun);
+			
+			MobileEntity targetedEntity = player.getTargetedEntity();
+			if(targetedEntity != null){
+				Vector2f targetingReticleScreenCoords = renderer.worldToScreenCoords(camera, targetedEntity.getPosition());
+				if(targetingReticleScreenCoords != null){	//targeting reticle is on screen
+					targetingReticle.getPosition().x = targetingReticleScreenCoords.x;
+					targetingReticle.getPosition().y = targetingReticleScreenCoords.y;
+					targetingReticle.show();
+				}
+				else{		//targeting reticle is off screen. render an arrow in the direction to turn instead
+					targetingReticle.hide();
+				}
+			}
+			else{
+				targetingReticle.hide();
+			}
 			guiRenderer.render(guis);
 			DisplayManager.updateDisplay();
 		}

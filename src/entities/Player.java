@@ -1,12 +1,19 @@
 package entities;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import models.TexturedModel;
 
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector4f;
 
+import engineTester.MobileEntityManager;
 import renderEngine.DisplayManager;
 import terrain.Terrain;
+import toolbox.Maths;
 
 public class Player extends Entity {
 	
@@ -24,6 +31,8 @@ public class Player extends Entity {
 	private float currentTurnSpeed = 0;
 	
 	private boolean isInAir = false;
+	
+	private MobileEntity targetedEntity = null;
 
 	public Player(TexturedModel model, Vector3f position, float rotX,
 			float rotY, float rotZ, float scale) {
@@ -31,8 +40,8 @@ public class Player extends Entity {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public void move(Terrain terrain){
-		checkInputs();
+	public void move(Terrain terrain, MobileEntityManager mobileEntities){
+		checkInputs(mobileEntities);
 		super.increaseRotation(0, currentTurnSpeed*DisplayManager.getFrameTimeSeconds(), 0);
 		
 		float forwardDistance = currentForwardSpeed * DisplayManager.getFrameTimeSeconds();
@@ -57,7 +66,7 @@ public class Player extends Entity {
 		currentVerticalSpeed -= GRAVITY * DisplayManager.getFrameTimeSeconds();
 	}
 	
-	private void checkInputs(){
+	private void checkInputs(MobileEntityManager mobileEntities){
 		//FORWARDS
 		if(Keyboard.isKeyDown(Keyboard.KEY_W)){
 			if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
@@ -112,6 +121,69 @@ public class Player extends Entity {
 			rotY=0.0f;
 		}
 		
+		//handle keyboard key events (non-polling)
+		//These events are for processing non-movement commands, so multiple commands don't get issued if the key is held down
+		while(Keyboard.next()){	
+			if(Keyboard.getEventKeyState() && Keyboard.getEventKey() == Keyboard.KEY_T){	//target object
+				this.targetedEntity = getEntityPlayerIsLookingAt(mobileEntities);
+				if(this.targetedEntity != null){
+					float distance = getDistanceBetweenEntities(this.targetedEntity, this);
+					System.out.println("target distance: "+distance);
+				}
+			}
+		}
+		
+	}
+	
+	private float getDistanceBetweenEntities(Entity e1, Entity e2){
+		Vector3f toEntityVector = new Vector3f();
+		Vector3f.sub(e1.getPosition(), e2.getPosition(), toEntityVector);
+		return toEntityVector.length();
+	}
+	
+	private MobileEntity getEntityPlayerIsLookingAt(MobileEntityManager mobileEntities){
+		float RANGE = 100f;
+		float CONE_ANGLE = 25f;	//everything inside this cone can be detected, in degrees
+		float RANGE2 = 15f;
+		float CONE_ANGLE2 = 90f;	//if the target is very close to the player, loosen up on the detection angle
+		float closestEntityDistance = RANGE;
+		MobileEntity closestEntity = null;
+		
+		List<MobileEntity> candidates = new ArrayList<MobileEntity>();
+		for(MobileEntity entity : mobileEntities.getEntities()){
+			Vector3f toEntityVector = new Vector3f();
+			Vector3f.sub(entity.getPosition(), this.getPosition(), toEntityVector);
+			float distance = toEntityVector.length();
+			toEntityVector.normalise(toEntityVector);
+			
+			if(distance < RANGE){
+				Matrix4f trnMat = Maths.createTransformationMatrix(new Vector3f(0,0,0), this.rotX, this.rotY, this.rotZ, 1.0f);
+				Vector4f dir = new Vector4f(0,0,1,0);
+				Vector4f playerLookDirection4 = new Vector4f();
+				Matrix4f.transform(trnMat, dir, playerLookDirection4);
+				Vector3f playerLookDirection = new Vector3f(playerLookDirection4.x, playerLookDirection4.y, playerLookDirection4.z);
+	
+				float dotProduct = Vector3f.dot(playerLookDirection, toEntityVector);
+				double angle = Math.toDegrees(Math.acos(dotProduct));
+				
+				if(angle < CONE_ANGLE || distance < RANGE2 && angle < CONE_ANGLE2){
+					candidates.add(entity);
+					if(distance < closestEntityDistance){
+						closestEntity = entity;
+						closestEntityDistance = distance;
+					}
+					//System.out.println("range = "+distance);
+					//System.out.println("angle = "+angle);
+				}
+			}
+		}
+		//System.out.println("candidates: "+candidates.size());
+		return closestEntity;
+		
+	}
+	
+	public MobileEntity getTargetedEntity(){
+		return this.targetedEntity;
 	}
 
 }

@@ -8,6 +8,7 @@ import java.util.Map;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
@@ -19,6 +20,7 @@ import shaders.StaticShader;
 import shaders.TerrainShader;
 import skybox.SkyboxRenderer;
 import terrain.Terrain;
+import toolbox.Maths;
 
 public class MasterRenderer {
 	
@@ -85,6 +87,7 @@ public class MasterRenderer {
 		entities.clear();
 		
 		//Terrain
+		//GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
 		terrainShader.start();
 		terrainShader.loadClippingPlane(clipPlane);
 		terrainShader.loadLights(lights);
@@ -93,6 +96,7 @@ public class MasterRenderer {
 		terrainRenderer.render(terrains);
 		terrainShader.stop();
 		terrains.clear();
+		//GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL );
 		
 		skyboxRenderer.render(camera, SKY_COLOUR);
 	}
@@ -137,6 +141,25 @@ public class MasterRenderer {
         projectionMatrix.m23 = -1;
         projectionMatrix.m32 = -((2 * NEAR_PLANE * FAR_PLANE) / frustum_length);
         projectionMatrix.m33 = 0;
+	}
+	
+	public Vector2f worldToScreenCoords(Camera camera, Vector3f worldPos){
+		Vector4f worldPos4 = new Vector4f(worldPos.x, worldPos.y, worldPos.z, 1.0f);
+		Matrix4f viewMat = Maths.createViewMatrix(camera);
+		Matrix4f projViewMat = new Matrix4f();
+		Matrix4f.mul(this.projectionMatrix, viewMat, projViewMat);
+		Vector4f result = new Vector4f();
+		Matrix4f.transform(projViewMat, worldPos4, result);
+		
+		boolean isInFrontOfCamera = result.z > 0;
+		result.scale(1.0f / result.w);	//divide by w to normalize the vector
+		if(result.x >= -1 && result.x <= 1f && result.y >= -1f && result.y <= 1f && isInFrontOfCamera){
+			
+			return new Vector2f(result.x, result.y);
+		}
+		else{
+			return null;
+		}
 	}
 	
 }
