@@ -1,6 +1,5 @@
 package entities;
 
-import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.util.vector.Vector3f;
 
@@ -11,7 +10,7 @@ public class Camera {
 	
 	
 	private Vector3f position = new Vector3f(0,0,0);
-	private float pitch, yaw, roll;
+	private float pitch, yaw;
 	
 	private Player player;
 	

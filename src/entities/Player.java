@@ -17,7 +17,6 @@ import toolbox.Maths;
 
 public class Player extends Entity {
 	
-	private static final float TERRAIN_HEIGHT = 0;
 	private static final float SPRINT_SPEED = 50;
 	private static final float RUN_SPEED = 20;
 	private static final float STRAFE_SPEED = 15;
@@ -96,10 +95,10 @@ public class Player extends Entity {
 		
 		//STRAFE
 		if(Keyboard.isKeyDown(Keyboard.KEY_D)){
-			currentStrafeSpeed = -RUN_SPEED;
+			currentStrafeSpeed = -STRAFE_SPEED;
 		}
 		else if(Keyboard.isKeyDown(Keyboard.KEY_A)){
-			currentStrafeSpeed = RUN_SPEED;
+			currentStrafeSpeed = STRAFE_SPEED;
 		}
 		else{
 			currentStrafeSpeed = 0;
@@ -172,8 +171,6 @@ public class Player extends Entity {
 						closestEntity = entity;
 						closestEntityDistance = distance;
 					}
-					//System.out.println("range = "+distance);
-					//System.out.println("angle = "+angle);
 				}
 			}
 		}

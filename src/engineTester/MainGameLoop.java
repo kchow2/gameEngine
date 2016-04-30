@@ -16,18 +16,14 @@ import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
 import entities.Camera;
-import entities.Entity;
 import entities.Light;
 import entities.MobileEntity;
 import entities.Player;
-import entities.Camera;
 import guis.GuiRenderer;
 import guis.GuiTexture;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.MasterRenderer;
-import renderEngine.EntityRenderer;
-import shaders.StaticShader;
 import terrain.Terrain;
 import textures.ModelTexture;
 import textures.TerrainTexture;

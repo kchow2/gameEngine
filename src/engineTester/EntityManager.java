@@ -87,7 +87,7 @@ public class EntityManager {
 		grassTexture.setTransparent(true);
 		grassTexture.setUseFakeLighting(true);
 		TexturedModel modelGrassTextured = new TexturedModel(modelGrass, grassTexture);
-		for(int i = 0; i < NUM_TREES; i++){
+		for(int i = 0; i < NUM_GRASS; i++){
 			Entity e = new Entity(modelGrassTextured, new Vector3f(), 0, 0, 0, 1.0f);
 			entities.add(e);
 		}

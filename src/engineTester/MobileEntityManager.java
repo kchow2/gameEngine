@@ -13,7 +13,6 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.vector.Vector3f;
 
 import renderEngine.Loader;
-import renderEngine.MasterRenderer;
 import terrain.Terrain;
 import textures.ModelTexture;
 import entities.Entity;
