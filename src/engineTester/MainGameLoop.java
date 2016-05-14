@@ -7,6 +7,8 @@ import models.ModelData;
 import models.OBJFileLoader;
 import models.RawModel;
 import models.TexturedModel;
+import physics.AABB;
+import physics.CollisionManager;
 
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
@@ -16,8 +18,10 @@ import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
 import entities.Camera;
+import entities.EntityManager;
 import entities.Light;
 import entities.MobileEntity;
+import entities.MobileEntityManager;
 import entities.Player;
 import guis.GuiRenderer;
 import guis.GuiTexture;
@@ -69,6 +73,7 @@ public class MainGameLoop {
 		RawModel playerModelRaw = loader.loadToVAO(modelData.getVertices(), modelData.getTextureCoords(), modelData.getNormals(), modelData.getIndices());
 		TexturedModel playerModel = new TexturedModel(playerModelRaw, new ModelTexture(loader.loadTexture("player")));
 		Player player = new Player(playerModel, new Vector3f(100,0,100),0,135.0f,0,1.0f);
+		CollisionManager.addBoundingBox(new AABB(player, 1.0f,1.0f,1.0f));
 		Camera camera = new Camera(player);
 		camera.setDistanceFromPlayer(20.0f);
 		camera.setAngleAroundPlayer(0.0f);
@@ -103,6 +108,9 @@ public class MainGameLoop {
 			
 			//update entities
 			mobileEntityManager.updateEntities(terrain);
+			
+			//check for collisions
+			CollisionManager.checkCollisions();
 			
 			//mousepicker + light following mouse
 			mousePicker.update();

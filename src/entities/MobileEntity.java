@@ -1,9 +1,10 @@
 package entities;
 
-import models.TexturedModel;
-
 import org.lwjgl.util.vector.Vector3f;
 
+import models.TexturedModel;
+import physics.AABB;
+import physics.CollisionManager;
 import renderEngine.DisplayManager;
 import terrain.Terrain;
 
@@ -21,6 +22,8 @@ public class MobileEntity extends Entity {
 		super(model, position, rotX, rotY, rotZ, scale);
 		
 		this.addForce(GRAVITY, new Vector3f(0f,-1f,0f));
+		AABB aabb = new AABB(this, 1.0f, 1.0f, 1.0f);
+		CollisionManager.addBoundingBox(aabb);
 	}
 	
 	public Vector3f getVelocity(){

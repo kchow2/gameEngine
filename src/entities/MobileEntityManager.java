@@ -1,4 +1,4 @@
-package engineTester;
+package entities;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,8 +15,6 @@ import org.lwjgl.util.vector.Vector3f;
 import renderEngine.Loader;
 import terrain.Terrain;
 import textures.ModelTexture;
-import entities.Entity;
-import entities.MobileEntity;
 
 //class responsible for physics for all mobile entities in the game
 public class MobileEntityManager {

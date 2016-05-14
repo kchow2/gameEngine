@@ -1,4 +1,4 @@
-package engineTester;
+package entities;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,6 @@ import models.ModelData;
 import models.OBJFileLoader;
 import models.RawModel;
 import models.TexturedModel;
-import entities.Entity;
 
 //this class is responsible for all stationary entities in the game
 public class EntityManager {
