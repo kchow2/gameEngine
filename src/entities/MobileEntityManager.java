@@ -38,10 +38,11 @@ private static List<MobileEntity> entities = new ArrayList<MobileEntity>();
 			bounce = true;
 		}
 		for(MobileEntity e:entities){
-			e.update(terrain);
+			
 			if(bounce){
-				e.getVelocity().y = 2.0f;
+				e.getVelocity().y = 10.0f;
 			}
+			e.update(terrain);
 		}
 	}
 	

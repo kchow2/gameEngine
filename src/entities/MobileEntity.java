@@ -10,18 +10,21 @@ import terrain.Terrain;
 
 public class MobileEntity extends Entity {
 	
-	public static float GRAVITY = 50f;
+	public static float GRAVITY = 20.0f;
 	public static float BOUNCE_DAMPING = 0.6f;
 	public static float BOUNCE_CUTOFF_THRESHOLD = 0.05f;
 	
 	protected Vector3f velocity = new Vector3f(0f,5.0f,0f);
-	protected Vector3f forces = new Vector3f(0f,0f,0f);
+	protected Vector3f acceleration = new Vector3f(0.0f, 0.0f, 0.0f);
+	//protected Vector3f forces = new Vector3f(0f,0f,0f);
 
 	public MobileEntity(TexturedModel model, Vector3f position, float rotX,
 			float rotY, float rotZ, float scale) {
 		super(model, position, rotX, rotY, rotZ, scale);
 		
-		this.addForce(GRAVITY, new Vector3f(0f,-1f,0f));
+		//this.addForce(GRAVITY, new Vector3f(0f,-1f,0f));
+		this.acceleration.y = -GRAVITY;
+		
 		AABB aabb = new AABB(this, 1.0f, 1.0f, 1.0f);
 		CollisionManager.addBoundingBox(aabb);
 	}
@@ -30,16 +33,8 @@ public class MobileEntity extends Entity {
 		return velocity;
 	}
 	
-	public Vector3f getForces(){
-		return forces;
-	}
-	
-	public void addForce(float amt, Vector3f direction){
-		Vector3f normal = new Vector3f(); 
-		direction.normalise(normal);
-		forces.x += amt * normal.x;
-		forces.y += amt * normal.y;
-		forces.z += amt * normal.z;
+	public Vector3f getAcceleration(){
+		return acceleration;
 	}
 	
 	public void update(Terrain terrain){
@@ -47,12 +42,13 @@ public class MobileEntity extends Entity {
 		float terrainHeight = terrain.getTerrainHeight(pos.x, pos.z);
 		
 		float dt = DisplayManager.getFrameTimeSeconds();
-		this.position.x += dt * (this.velocity.x - forces.x*dt/2);
-		this.position.y += dt * (this.velocity.y - forces.y*dt/2);
-		this.position.z += dt * (this.velocity.z - forces.z*dt/2);
-		this.velocity.x = this.velocity.x + forces.x * dt;
-		this.velocity.y = this.velocity.y + forces.y * dt;
-		this.velocity.z = this.velocity.z + forces.z * dt;
+		
+		this.position.x += this.velocity.x*dt + 0.5f*acceleration.x*dt*dt;
+		this.position.y += this.velocity.y*dt + 0.5f*acceleration.y*dt*dt;
+		this.position.z += this.velocity.z*dt + 0.5f*acceleration.z*dt*dt;
+		this.velocity.x += this.acceleration.x*dt;
+		this.velocity.y += this.acceleration.y*dt;
+		this.velocity.z += this.acceleration.z*dt;
 		
 		if(this.position.y - terrainHeight < 0.001){
 			this.position.y = terrainHeight;
@@ -61,6 +57,14 @@ public class MobileEntity extends Entity {
 			else
 				this.velocity.y = 0;
 		}
+		
+		//movement damping
+		float xDamp = Math.min(Math.abs(velocity.x), 12.0f);
+		xDamp = this.velocity.x < 0 ? -xDamp : xDamp;
+		this.velocity.x -= xDamp*dt;
+		float zDamp = Math.min(Math.abs(velocity.z), 12.0f);
+		zDamp = this.velocity.z < 0 ? -zDamp : zDamp;
+		this.velocity.z -= zDamp*dt;
 	}
 	
 }

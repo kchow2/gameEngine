@@ -14,18 +14,19 @@ import renderEngine.DisplayManager;
 import terrain.Terrain;
 import toolbox.Maths;
 
-public class Player extends Entity {
+public class Player extends MobileEntity {
 	
-	private static final float SPRINT_SPEED = 50;
-	private static final float RUN_SPEED = 20;
-	private static final float STRAFE_SPEED = 15;
+	private static final float SPRINT_ACCELERATION = 55.0f;
+	private static final float FORWARD_ACCELERATION = 20.0f;
+	private static final float STRAFE_ACCELERATION = 15.0f;
+	private static final float VELOCITY_DAMPING = 1.5f;
 	private static final float TURN_SPEED = 160;
-	private static final float GRAVITY = 50;
+	//private static final float GRAVITY = 50;
 	private static final float JUMP_POWER = 30;
 	
-	private float currentForwardSpeed = 0;
-	private float currentStrafeSpeed = 0;
-	private float currentVerticalSpeed = 0;
+	private float currentForwardAcceleration = 0;
+	private float currentStrafeAcceleration = 0;
+	private float currentVerticalAcceleration = 0;
 	private float currentTurnSpeed = 0;
 	
 	private boolean isInAir = false;
@@ -42,9 +43,24 @@ public class Player extends Entity {
 		checkInputs(mobileEntities);
 		super.increaseRotation(0, currentTurnSpeed*DisplayManager.getFrameTimeSeconds(), 0);
 		
-		float forwardDistance = currentForwardSpeed * DisplayManager.getFrameTimeSeconds();
-		float dx = (float) (Math.sin(Math.toRadians(this.getRotY()))*forwardDistance);
-		float dz = (float) (Math.cos(Math.toRadians(this.getRotY()))*forwardDistance);;
+		float dt = DisplayManager.getFrameTimeSeconds();
+		
+		//this.velocity.x *= 1.0f - VELOCITY_DAMPING*dt;
+		//this.velocity.z *= 1.0f - VELOCITY_DAMPING*dt;
+		
+		float forwardVelocity = currentForwardAcceleration * dt;
+		this.velocity.x += (float) (Math.sin(Math.toRadians(this.getRotY()))*forwardVelocity);
+		this.velocity.z += (float) (Math.cos(Math.toRadians(this.getRotY()))*forwardVelocity);
+		
+		float strafeVelocity = currentStrafeAcceleration * dt;
+		this.velocity.x += (float) (Math.sin(Math.toRadians(this.getRotY()+90.0f))*strafeVelocity);
+		this.velocity.z += (float) (Math.cos(Math.toRadians(this.getRotY()+90.0f))*strafeVelocity);
+		
+		float verticalVelocity = currentVerticalAcceleration * dt;
+		this.velocity.y += verticalVelocity;
+		
+		/*float forwardDistance = currentForwardSpeed * DisplayManager.getFrameTimeSeconds();
+		
 		
 		float strafeDistance = currentStrafeSpeed * DisplayManager.getFrameTimeSeconds();
 		dx += (float) (Math.sin(Math.toRadians(this.getRotY()+90.0f))*strafeDistance);
@@ -53,6 +69,9 @@ public class Player extends Entity {
 		float verticalDistance = currentVerticalSpeed * DisplayManager.getFrameTimeSeconds();
 		float dy = verticalDistance;
 		super.increasePosition(dx, dy, dz);
+		this.velocity.x = dx;
+		this.velocity.y = dy;
+		this.velocity.z = dz;
 		
 		float terrainHeight = terrain.getTerrainHeight(getPosition().x, getPosition().z);
 		if(super.getPosition().y < terrainHeight){
@@ -61,24 +80,24 @@ public class Player extends Entity {
 			this.getPosition().y = terrainHeight;
 		}
 		
-		currentVerticalSpeed -= GRAVITY * DisplayManager.getFrameTimeSeconds();
+		currentVerticalSpeed -= GRAVITY * DisplayManager.getFrameTimeSeconds();*/
 	}
 	
 	private void checkInputs(MobileEntityManager mobileEntities){
 		//FORWARDS
 		if(Keyboard.isKeyDown(Keyboard.KEY_W)){
 			if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)){
-				this.currentForwardSpeed = SPRINT_SPEED;
+				this.currentForwardAcceleration = SPRINT_ACCELERATION;
 			}
 			else{
-				this.currentForwardSpeed = RUN_SPEED;
+				this.currentForwardAcceleration = FORWARD_ACCELERATION;
 			}
 		}
 		else if(Keyboard.isKeyDown(Keyboard.KEY_S)){
-			this.currentForwardSpeed = -RUN_SPEED;
+			this.currentForwardAcceleration = -FORWARD_ACCELERATION;
 		}
 		else{
-			this.currentForwardSpeed = 0;
+			this.currentForwardAcceleration = 0;
 		}
 		
 		//ROTATE
@@ -94,21 +113,25 @@ public class Player extends Entity {
 		
 		//STRAFE
 		if(Keyboard.isKeyDown(Keyboard.KEY_D)){
-			currentStrafeSpeed = -STRAFE_SPEED;
+			currentStrafeAcceleration = -STRAFE_ACCELERATION;
 		}
 		else if(Keyboard.isKeyDown(Keyboard.KEY_A)){
-			currentStrafeSpeed = STRAFE_SPEED;
+			currentStrafeAcceleration = STRAFE_ACCELERATION;
 		}
 		else{
-			currentStrafeSpeed = 0;
+			currentStrafeAcceleration = 0;
 		}
 		
 		//JUMP
 		if(Keyboard.isKeyDown(Keyboard.KEY_SPACE)){
-			if(!isInAir){
-				currentVerticalSpeed = JUMP_POWER;
-				isInAir = true;
-			}
+			currentVerticalAcceleration = JUMP_POWER;
+			//if(!isInAir){
+			//	
+			//	isInAir = true;
+			//}
+		}
+		else{
+			currentVerticalAcceleration = 0.0f;
 		}
 		
 		//OTHER MOVEMENT

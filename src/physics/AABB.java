@@ -3,13 +3,14 @@ package physics;
 import org.lwjgl.util.vector.Vector3f;
 
 import entities.Entity;
+import entities.MobileEntity;
 
 public class AABB {
 	public float xSize, ySize, zSize;
 	public float x1,x2,y1,y2,z1,z2;
-	private Entity sourceEntity;
+	private MobileEntity sourceEntity;
 	
-	public AABB(Entity sourceEntity, float xSize, float ySize, float zSize){
+	public AABB(MobileEntity sourceEntity, float xSize, float ySize, float zSize){
 		this.sourceEntity = sourceEntity;
 		this.xSize = xSize;
 		this.ySize = ySize;
@@ -20,6 +21,10 @@ public class AABB {
 		this.y2 = ySize;
 		this.z1 = -zSize/2.0f;
 		this.z2 = zSize/2.0f;
+	}
+	
+	public MobileEntity getEntity(){
+		return this.sourceEntity;
 	}
 	
 	//update the AABB position to move with the entity

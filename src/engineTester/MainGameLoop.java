@@ -84,7 +84,8 @@ public class MainGameLoop {
 		entityManager.addEntity(player);
 		
 		MobileEntityManager mobileEntityManager = new MobileEntityManager();
-		mobileEntityManager.populateWorld(entityManager, loader, terrain);		
+		mobileEntityManager.populateWorld(entityManager, loader, terrain);	
+		mobileEntityManager.addEntity(player);
 		
 		List<GuiTexture> guis = new ArrayList<GuiTexture>();
 		GuiTexture targetingReticle = new GuiTexture(loader.loadTexture("target"), new Vector2f(0f,0f), new Vector2f(0.1f,0.1f));
