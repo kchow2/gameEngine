@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import models.TexturedModel;
+import physics.AABB;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.vector.Matrix4f;
@@ -29,14 +30,13 @@ public class Player extends MobileEntity {
 	private float currentVerticalAcceleration = 0;
 	private float currentTurnSpeed = 0;
 	
-	private boolean isInAir = false;
+	//private boolean isInAir = false;
 	
 	private MobileEntity targetedEntity = null;
 
 	public Player(TexturedModel model, Vector3f position, float rotX,
-			float rotY, float rotZ, float scale) {
-		super(model, position, rotX, rotY, rotZ, scale);
-		// TODO Auto-generated constructor stub
+			float rotY, float rotZ, float scale, AABB aabb) {
+		super(model, position, rotX, rotY, rotZ, scale, aabb);
 	}
 	
 	public void move(Terrain terrain, MobileEntityManager mobileEntities){
@@ -44,9 +44,6 @@ public class Player extends MobileEntity {
 		super.increaseRotation(0, currentTurnSpeed*DisplayManager.getFrameTimeSeconds(), 0);
 		
 		float dt = DisplayManager.getFrameTimeSeconds();
-		
-		//this.velocity.x *= 1.0f - VELOCITY_DAMPING*dt;
-		//this.velocity.z *= 1.0f - VELOCITY_DAMPING*dt;
 		
 		float forwardVelocity = currentForwardAcceleration * dt;
 		this.velocity.x += (float) (Math.sin(Math.toRadians(this.getRotY()))*forwardVelocity);
@@ -58,29 +55,6 @@ public class Player extends MobileEntity {
 		
 		float verticalVelocity = currentVerticalAcceleration * dt;
 		this.velocity.y += verticalVelocity;
-		
-		/*float forwardDistance = currentForwardSpeed * DisplayManager.getFrameTimeSeconds();
-		
-		
-		float strafeDistance = currentStrafeSpeed * DisplayManager.getFrameTimeSeconds();
-		dx += (float) (Math.sin(Math.toRadians(this.getRotY()+90.0f))*strafeDistance);
-		dz += (float) (Math.cos(Math.toRadians(this.getRotY()+90.0f))*strafeDistance);
-		
-		float verticalDistance = currentVerticalSpeed * DisplayManager.getFrameTimeSeconds();
-		float dy = verticalDistance;
-		super.increasePosition(dx, dy, dz);
-		this.velocity.x = dx;
-		this.velocity.y = dy;
-		this.velocity.z = dz;
-		
-		float terrainHeight = terrain.getTerrainHeight(getPosition().x, getPosition().z);
-		if(super.getPosition().y < terrainHeight){
-			currentVerticalSpeed = 0;
-			isInAir = false;
-			this.getPosition().y = terrainHeight;
-		}
-		
-		currentVerticalSpeed -= GRAVITY * DisplayManager.getFrameTimeSeconds();*/
 	}
 	
 	private void checkInputs(MobileEntityManager mobileEntities){

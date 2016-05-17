@@ -19,14 +19,14 @@ public class MobileEntity extends Entity {
 	//protected Vector3f forces = new Vector3f(0f,0f,0f);
 
 	public MobileEntity(TexturedModel model, Vector3f position, float rotX,
-			float rotY, float rotZ, float scale) {
+			float rotY, float rotZ, float scale, AABB aabb) {
 		super(model, position, rotX, rotY, rotZ, scale);
 		
 		//this.addForce(GRAVITY, new Vector3f(0f,-1f,0f));
 		this.acceleration.y = -GRAVITY;
 		
-		AABB aabb = new AABB(this, 1.0f, 1.0f, 1.0f);
-		CollisionManager.addBoundingBox(aabb);
+		AABB aabb_ = new AABB(this, aabb.x2-aabb.x1, aabb.y2-aabb.y1, aabb.z2-aabb.z1, 0, 0, 0);
+		CollisionManager.addBoundingBox(aabb_);
 	}
 	
 	public Vector3f getVelocity(){

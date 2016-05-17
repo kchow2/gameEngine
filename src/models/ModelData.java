@@ -1,5 +1,7 @@
 package models;
 
+import physics.AABB;
+
 public class ModelData {
 
 	private float[] vertices;
@@ -7,14 +9,17 @@ public class ModelData {
 	private float[] normals;
 	private int[] indices;
 	private float furthestPoint;
+	
+	private AABB aabb;	//the enclosing axis aligned bounding box
 
 	public ModelData(float[] vertices, float[] textureCoords, float[] normals, int[] indices,
-			float furthestPoint) {
+			float furthestPoint, AABB aabb) {
 		this.vertices = vertices;
 		this.textureCoords = textureCoords;
 		this.normals = normals;
 		this.indices = indices;
 		this.furthestPoint = furthestPoint;
+		this.aabb = aabb;
 	}
 
 	public float[] getVertices() {
@@ -35,6 +40,10 @@ public class ModelData {
 
 	public float getFurthestPoint() {
 		return furthestPoint;
+	}
+	
+	public AABB getAABB(){
+		return this.aabb;
 	}
 
 }

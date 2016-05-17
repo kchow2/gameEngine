@@ -6,11 +6,12 @@ import entities.Entity;
 import entities.MobileEntity;
 
 public class AABB {
+	public float xOffset, yOffset, zOffset;
 	public float xSize, ySize, zSize;
 	public float x1,x2,y1,y2,z1,z2;
 	private MobileEntity sourceEntity;
 	
-	public AABB(MobileEntity sourceEntity, float xSize, float ySize, float zSize){
+	public AABB(MobileEntity sourceEntity, float xSize, float ySize, float zSize, float xOffset, float yOffset, float zOffset){
 		this.sourceEntity = sourceEntity;
 		this.xSize = xSize;
 		this.ySize = ySize;
@@ -30,12 +31,12 @@ public class AABB {
 	//update the AABB position to move with the entity
 	public void updatePos(){
 		Vector3f pos = sourceEntity.getPosition();
-		this.x1 = pos.x - xSize/2.0f;
-		this.x2 = pos.x + xSize/2.0f;
-		this.y1 = pos.y;
-		this.y2 = pos.y + ySize;
-		this.z1 = pos.z - zSize/2.0f;
-		this.z2 = pos.z + zSize/2.0f;
+		this.x1 = pos.x - xSize/2.0f + xOffset;
+		this.x2 = pos.x + xSize/2.0f + xOffset;
+		this.y1 = pos.y + yOffset;
+		this.y2 = pos.y + ySize + yOffset;
+		this.z1 = pos.z - zSize/2.0f + zOffset;
+		this.z2 = pos.z + zSize/2.0f + zOffset;
 	}
 	
 	public Vector3f getCenter(){

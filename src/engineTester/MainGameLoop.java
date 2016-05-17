@@ -72,8 +72,8 @@ public class MainGameLoop {
 		ModelData modelData = OBJFileLoader.loadOBJ("player");
 		RawModel playerModelRaw = loader.loadToVAO(modelData.getVertices(), modelData.getTextureCoords(), modelData.getNormals(), modelData.getIndices());
 		TexturedModel playerModel = new TexturedModel(playerModelRaw, new ModelTexture(loader.loadTexture("player")));
-		Player player = new Player(playerModel, new Vector3f(100,0,100),0,135.0f,0,1.0f);
-		CollisionManager.addBoundingBox(new AABB(player, 1.0f,1.0f,1.0f));
+		Player player = new Player(playerModel, new Vector3f(100,0,100),0,135.0f,0,1.0f, modelData.getAABB());
+		//CollisionManager.addBoundingBox(modelData.getAABB());
 		Camera camera = new Camera(player);
 		camera.setDistanceFromPlayer(20.0f);
 		camera.setAngleAroundPlayer(0.0f);

@@ -61,7 +61,7 @@ private static List<MobileEntity> entities = new ArrayList<MobileEntity>();
 		ModelTexture cubeTex = new ModelTexture(loader.loadTexture("cube"));
 		TexturedModel modelCubeTextured = new TexturedModel(modelCube, cubeTex);
 		for(int i = 0; i < NUM_BOXES; i++){
-			MobileEntity e = new MobileEntity(modelCubeTextured, new Vector3f(), 0, 0, 0, 1.0f);
+			MobileEntity e = new MobileEntity(modelCubeTextured, new Vector3f(), 0, 0, 0, 1.0f, modelCubeData.getAABB());
 			entities.add(e);
 			entityManager.addEntity(e);	//the entity manager is still responsible for rendering all entities. This class only does movement
 		}
