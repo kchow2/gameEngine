@@ -46,6 +46,7 @@ public class CollisionManager {
 		final float MASS2 = 1.0f;
 		final float COEFF_REST = 0.7f;
 
+		//System.out.println("pos1="+pos1+" pos2="+pos2);
 		//System.out.println("BEFORE COLLISION v1="+v1+" v2="+v2);
 		float v1Initial = v1.length();
 		float v2Initial = v2.length();
@@ -58,9 +59,9 @@ public class CollisionManager {
 		collisionDirection.normalise(collisionDirection);
 		
 		//add a 'pushing' force for 2 objects that are stuck inside each other with close to 0 velocity to push them apart
-		if(v1Final < 0.001f && v2Final < 0.001f){
-			v1Final = 0.001f;
-			v2Final = 0.002f;
+		if(v1Final < 0.01f && v2Final < 0.01f){
+			v1Final = 0.5f;
+			v2Final = 0.5f;
 		}
 		
 		v1.x = -collisionDirection.x*v1Final;

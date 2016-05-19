@@ -44,7 +44,7 @@ public class Player extends MobileEntity {
 		
 		float dt = DisplayManager.getFrameTimeSeconds();
 		float accelerationDamping = 1.0f - this.velocity.lengthSquared() / (MAX_VELOCITY*MAX_VELOCITY+1);
-		
+		accelerationDamping = Math.min(1.0f, Math.max(0.0f, accelerationDamping));
 
 		currentForwardAcceleration *= accelerationDamping;
 		currentStrafeAcceleration *= accelerationDamping;

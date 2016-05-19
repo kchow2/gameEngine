@@ -61,7 +61,7 @@ public class MobileEntity extends Entity {
 		}
 		
 		//movement damping when object is not accelerating
-		if(this.acceleration.x < 0.001 && this.acceleration.z < 0.001){
+		if(Math.abs(this.acceleration.x) < 0.001 && Math.abs(this.acceleration.z) < 0.001){
 			float xDamp = Math.min(Math.abs(velocity.x), 12.0f);
 			xDamp = this.velocity.x < 0 ? -xDamp : xDamp;
 			this.velocity.x -= xDamp*dt;
