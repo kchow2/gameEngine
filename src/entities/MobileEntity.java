@@ -14,6 +14,8 @@ public class MobileEntity extends Entity {
 	public static float BOUNCE_DAMPING = 0.6f;
 	public static float BOUNCE_CUTOFF_THRESHOLD = 0.05f;
 	
+	protected boolean isJumping = false;
+	
 	protected Vector3f velocity = new Vector3f(0f,5.0f,0f);
 	protected Vector3f acceleration = new Vector3f(0.0f, 0.0f, 0.0f);
 	//protected Vector3f forces = new Vector3f(0f,0f,0f);
@@ -50,21 +52,23 @@ public class MobileEntity extends Entity {
 		this.velocity.y += this.acceleration.y*dt;
 		this.velocity.z += this.acceleration.z*dt;
 		
-		if(this.position.y - terrainHeight < 0.001){
+		if(this.position.y - terrainHeight < 0.001){	//check if the player is not trying to jump, otherwise the player will be stuck to the ground when jumping while travelling uphill
 			this.position.y = terrainHeight;
 			if(this.velocity.y < 0 && -this.velocity.y*dt > BOUNCE_CUTOFF_THRESHOLD)
 				this.velocity.y = -this.velocity.y * BOUNCE_DAMPING;
-			else
+			else if(!isJumping)
 				this.velocity.y = 0;
 		}
 		
-		//movement damping
-		float xDamp = Math.min(Math.abs(velocity.x), 12.0f);
-		xDamp = this.velocity.x < 0 ? -xDamp : xDamp;
-		this.velocity.x -= xDamp*dt;
-		float zDamp = Math.min(Math.abs(velocity.z), 12.0f);
-		zDamp = this.velocity.z < 0 ? -zDamp : zDamp;
-		this.velocity.z -= zDamp*dt;
+		//movement damping when object is not accelerating
+		if(this.acceleration.x < 0.001 && this.acceleration.z < 0.001){
+			float xDamp = Math.min(Math.abs(velocity.x), 12.0f);
+			xDamp = this.velocity.x < 0 ? -xDamp : xDamp;
+			this.velocity.x -= xDamp*dt;
+			float zDamp = Math.min(Math.abs(velocity.z), 12.0f);
+			zDamp = this.velocity.z < 0 ? -zDamp : zDamp;
+			this.velocity.z -= zDamp*dt;
+		}
 	}
 	
 }

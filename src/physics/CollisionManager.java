@@ -44,23 +44,24 @@ public class CollisionManager {
 		
 		final float MASS1 = 1.0f;
 		final float MASS2 = 1.0f;
-		//final float COEFF_REST = 0.7f;
-		//Vector3f entity1toEntity2Vec = new Vector3f(pos2.x-pos1.x, pos2.y-pos1.y, pos2.z-pos1.z);
-		
-		//float v1dotv2 = Vector3f.dot(v1, v2);
+		final float COEFF_REST = 0.7f;
 
-		System.out.println("BEFORE COLLISION v1="+v1+" v2="+v2);
+		//System.out.println("BEFORE COLLISION v1="+v1+" v2="+v2);
 		float v1Initial = v1.length();
 		float v2Initial = v2.length();
-		float v1Final = ((MASS2-MASS1)*v1Initial+2*MASS2*v2Initial)/(MASS1+MASS2);
-		float v2Final = ((MASS1-MASS2)*v2Initial+2*MASS1*v1Initial)/(MASS1+MASS2);
+		float v1Final = COEFF_REST*((MASS2-MASS1)*v1Initial+2*MASS2*v2Initial)/(MASS1+MASS2);
+		float v2Final = COEFF_REST*((MASS1-MASS2)*v2Initial+2*MASS1*v1Initial)/(MASS1+MASS2);
 		
-		System.out.println("v1="+v1Initial+" v2="+v2Initial+" v1f="+v1Final+" v2f="+v2Final);
+		//System.out.println("v1="+v1Initial+" v2="+v2Initial+" v1f="+v1Final+" v2f="+v2Final);
 		
 		Vector3f collisionDirection = new Vector3f(pos2.x-pos1.x, pos2.y-pos1.y, pos2.z-pos1.z);
 		collisionDirection.normalise(collisionDirection);
 		
-		
+		//add a 'pushing' force for 2 objects that are stuck inside each other with close to 0 velocity to push them apart
+		if(v1Final < 0.001f && v2Final < 0.001f){
+			v1Final = 0.001f;
+			v2Final = 0.002f;
+		}
 		
 		v1.x = -collisionDirection.x*v1Final;
 		v1.y = -collisionDirection.y*v1Final;
@@ -69,6 +70,7 @@ public class CollisionManager {
 		v2.x = collisionDirection.x*v2Final;
 		v2.y = collisionDirection.y*v2Final;
 		v2.z = collisionDirection.z*v2Final;
+		
 		System.out.println("AFTER COLLISION v1="+v1+" v2="+v2);
 		//System.out.println("Collision detected! aabb1="+aabb1.getCenter()+" aabb2=" + aabb2.getCenter());
 		

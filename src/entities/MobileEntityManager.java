@@ -48,7 +48,7 @@ private static List<MobileEntity> entities = new ArrayList<MobileEntity>();
 	
 	//populates the world with a bunch of random shit like trees, ferns, etc
 	public void populateWorld(EntityManager entityManager, Loader loader, Terrain terrain){
-		final int NUM_BOXES = 100;
+		final int NUM_BOXES = 500;
 		final float XMIN = 0;
 		final float ZMIN = 0;
 		final float MAPSIZE = 800;

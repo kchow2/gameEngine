@@ -7,6 +7,7 @@ import models.ModelData;
 import models.OBJFileLoader;
 import models.RawModel;
 import models.TexturedModel;
+import normalMappingObjConverter.NormalMappedObjLoader;
 import physics.AABB;
 import physics.CollisionManager;
 
@@ -18,6 +19,7 @@ import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
 import entities.Camera;
+import entities.Entity;
 import entities.EntityManager;
 import entities.Light;
 import entities.MobileEntity;
@@ -69,7 +71,7 @@ public class MainGameLoop {
 		//Terrain terrain2 = new Terrain(1,-1,loader, new ModelTexture(loader.loadTexture("stallTexture")));
 		
 		//Player
-		ModelData modelData = OBJFileLoader.loadOBJ("player");
+		ModelData modelData = OBJFileLoader.loadOBJ("cube");
 		RawModel playerModelRaw = loader.loadToVAO(modelData.getVertices(), modelData.getTextureCoords(), modelData.getNormals(), modelData.getIndices());
 		TexturedModel playerModel = new TexturedModel(playerModelRaw, new ModelTexture(loader.loadTexture("player")));
 		Player player = new Player(playerModel, new Vector3f(100,0,100),0,135.0f,0,1.0f, modelData.getAABB());
@@ -82,6 +84,13 @@ public class MainGameLoop {
 		EntityManager entityManager = new EntityManager();
 		entityManager.populateWorld(loader, terrain);
 		entityManager.addEntity(player);
+		
+		List<Entity> normalMapEntities = new ArrayList<Entity>();
+		TexturedModel barrelModel = new TexturedModel(NormalMappedObjLoader.loadOBJ("barrel", loader), new ModelTexture(loader.loadTexture("barrel")));
+		barrelModel.getTexture().setNormalMap(loader.loadTexture("barrelNormal"));
+		barrelModel.getTexture().setShineDamper(10.0f);
+		barrelModel.getTexture().setReflectivity(0.5f);
+		normalMapEntities.add(new Entity(barrelModel, new Vector3f(75,10,75), 0,0,0,1f));
 		
 		MobileEntityManager mobileEntityManager = new MobileEntityManager();
 		mobileEntityManager.populateWorld(entityManager, loader, terrain);	
@@ -129,15 +138,15 @@ public class MainGameLoop {
 			float distance = 2*(camera.getPosition().y - water.getHeight());
 			camera.getPosition().y -= distance;
 			camera.invertPitch();
-			renderer.renderScene(entityManager.getEntities(), terrains, lights, camera, new Vector4f(0,1,0,-water.getHeight()));
+			renderer.renderScene(entityManager.getEntities(), normalMapEntities, terrains, lights, camera, new Vector4f(0,1,0,-water.getHeight()));
 			camera.getPosition().y += distance;
 			camera.invertPitch();
 			fbos.bindRefractionFrameBuffer();
-			renderer.renderScene(entityManager.getEntities(), terrains, lights, camera, new Vector4f(0,-1,0,water.getHeight()));
+			renderer.renderScene(entityManager.getEntities(), normalMapEntities, terrains, lights, camera, new Vector4f(0,-1,0,water.getHeight()));
 			fbos.unbindCurrentFrameBuffer();
 			GL11.glDisable(GL30.GL_CLIP_DISTANCE0);
 			
-			renderer.renderScene(entityManager.getEntities(), terrains, lights, camera, new Vector4f(0,-1,0,999999));
+			renderer.renderScene(entityManager.getEntities(), normalMapEntities, terrains, lights, camera, new Vector4f(0,-1,0,999999));
 			waterRenderer.render(waters,  camera, sun);
 			
 			MobileEntity targetedEntity = player.getTargetedEntity();

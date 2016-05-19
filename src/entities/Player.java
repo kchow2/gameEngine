@@ -17,12 +17,11 @@ import toolbox.Maths;
 
 public class Player extends MobileEntity {
 	
-	private static final float SPRINT_ACCELERATION = 55.0f;
-	private static final float FORWARD_ACCELERATION = 20.0f;
-	private static final float STRAFE_ACCELERATION = 15.0f;
-	private static final float VELOCITY_DAMPING = 1.5f;
+	private static final float MAX_VELOCITY = 30.0f;
+	private static final float SPRINT_ACCELERATION = 100.0f;
+	private static final float FORWARD_ACCELERATION = 75.0f;
+	private static final float STRAFE_ACCELERATION = 50.0f;
 	private static final float TURN_SPEED = 160;
-	//private static final float GRAVITY = 50;
 	private static final float JUMP_POWER = 30;
 	
 	private float currentForwardAcceleration = 0;
@@ -44,6 +43,12 @@ public class Player extends MobileEntity {
 		super.increaseRotation(0, currentTurnSpeed*DisplayManager.getFrameTimeSeconds(), 0);
 		
 		float dt = DisplayManager.getFrameTimeSeconds();
+		float accelerationDamping = 1.0f - this.velocity.lengthSquared() / (MAX_VELOCITY*MAX_VELOCITY+1);
+		
+
+		currentForwardAcceleration *= accelerationDamping;
+		currentStrafeAcceleration *= accelerationDamping;
+		//currentVerticalAcceleration *= accelerationDamping;
 		
 		float forwardVelocity = currentForwardAcceleration * dt;
 		this.velocity.x += (float) (Math.sin(Math.toRadians(this.getRotY()))*forwardVelocity);
@@ -99,6 +104,7 @@ public class Player extends MobileEntity {
 		//JUMP
 		if(Keyboard.isKeyDown(Keyboard.KEY_SPACE)){
 			currentVerticalAcceleration = JUMP_POWER;
+			this.isJumping = true;
 			//if(!isInAir){
 			//	
 			//	isInAir = true;
@@ -106,6 +112,7 @@ public class Player extends MobileEntity {
 		}
 		else{
 			currentVerticalAcceleration = 0.0f;
+			isJumping = false;
 		}
 		
 		//OTHER MOVEMENT
