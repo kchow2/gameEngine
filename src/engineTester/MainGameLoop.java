@@ -1,5 +1,6 @@
 package engineTester;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +26,9 @@ import entities.Light;
 import entities.MobileEntity;
 import entities.MobileEntityManager;
 import entities.Player;
+import fontMeshCreator.FontType;
+import fontMeshCreator.GUIText;
+import fontRendering.TextMaster;
 import guis.GuiRenderer;
 import guis.GuiTexture;
 import renderEngine.DisplayManager;
@@ -46,6 +50,12 @@ public class MainGameLoop {
 		
 		Loader loader = new Loader();
 		MasterRenderer renderer = new MasterRenderer(loader);
+		TextMaster.init(loader);
+		
+		FontType font = new FontType(loader.loadTexture("arial"), new File("res/arial.fnt"));
+		GUIText text = new GUIText("Hello World!", 1, font, new Vector2f(0.5f,0.5f), 0.5f, false);
+		text.setColour(1, 0, 1);
+		
 		//Light light = 
 		//Light light2 = new Light(new Vector3f(200,1000,200), new Vector3f(0.0f,1,1));
 		List<Light> lights = new ArrayList<Light>();
@@ -165,9 +175,11 @@ public class MainGameLoop {
 				targetingReticle.hide();
 			}
 			guiRenderer.render(guis);
+			TextMaster.render();
 			DisplayManager.updateDisplay();
 		}
 		
+		TextMaster.cleanUp();
 		renderer.cleanUp();
 		fbos.cleanUp();
 		waterShader.cleanUp();
