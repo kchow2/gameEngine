@@ -121,13 +121,12 @@ public class MainGameLoop {
 		waters.add(water);
 		
 		while(!Display.isCloseRequested()){
-			
-			//update player+camera
-			camera.move();
-			player.move(terrain, mobileEntityManager);
-			
 			//update entities
 			mobileEntityManager.updateEntities(terrain);
+			
+			//update player+camera
+			player.move(terrain, mobileEntityManager);
+			camera.move();
 			
 			//check for collisions
 			CollisionManager.checkCollisions();
