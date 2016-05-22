@@ -53,7 +53,7 @@ public class MainGameLoop {
 		TextMaster.init(loader);
 		
 		FontType font = new FontType(loader.loadTexture("arial"), new File("res/arial.fnt"));
-		GUIText text = new GUIText("Hello World!", 1, font, new Vector2f(0.5f,0.5f), 0.5f, false);
+		GUIText text = new GUIText("Hello World!", 10.0f, font, new Vector2f(0.1f,0.2f), 0.5f, false);
 		text.setColour(1, 0, 1);
 		
 		//Light light = 
