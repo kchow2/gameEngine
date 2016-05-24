@@ -9,9 +9,12 @@ import models.OBJFileLoader;
 import models.RawModel;
 import models.TexturedModel;
 import normalMappingObjConverter.NormalMappedObjLoader;
+import particles.Particle;
+import particles.ParticleMaster;
 import physics.AABB;
 import physics.CollisionManager;
 
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
@@ -51,10 +54,11 @@ public class MainGameLoop {
 		Loader loader = new Loader();
 		MasterRenderer renderer = new MasterRenderer(loader);
 		TextMaster.init(loader);
+		ParticleMaster.init(loader, renderer.getProjectionMatrix());
 		
-		FontType font = new FontType(loader.loadTexture("arial"), new File("res/arial.fnt"));
-		GUIText text = new GUIText("Hello World!", 10.0f, font, new Vector2f(0.1f,0.2f), 0.5f, false);
-		text.setColour(1, 0, 1);
+		//FontType font = new FontType(loader.loadTexture("arial"), new File("res/arial.fnt"));
+		//GUIText text = new GUIText("Hello World!", 10.0f, font, new Vector2f(0.1f,0.2f), 0.5f, false);
+		//text.setColour(1, 0, 1);
 		
 		//Light light = 
 		//Light light2 = new Light(new Vector3f(200,1000,200), new Vector3f(0.0f,1,1));
@@ -133,6 +137,14 @@ public class MainGameLoop {
 			
 			//mousepicker + light following mouse
 			mousePicker.update();
+			
+			//particles
+			if(Keyboard.isKeyDown(Keyboard.KEY_Y)){
+				Particle p = new Particle(new Vector3f(player.getPosition()),new Vector3f(player.getVelocity()), 1.0f, 4.0f, 0, 1 );
+				p.getVelocity().y += 10.0f;
+			}
+			ParticleMaster.update();
+			
 			Vector3f mousePoint = mousePicker.getCurrentTerrainPoint();
 			if(mousePoint != null){
 				Vector3f terrainNormal = terrain.getTerrainNormal(mousePoint.x, mousePoint.z);
@@ -173,6 +185,7 @@ public class MainGameLoop {
 			else{
 				targetingReticle.hide();
 			}
+			ParticleMaster.renderParticles(camera);
 			guiRenderer.render(guis);
 			TextMaster.render();
 			DisplayManager.updateDisplay();
