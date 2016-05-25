@@ -1,18 +1,7 @@
 package engineTester;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import models.ModelData;
-import models.OBJFileLoader;
-import models.RawModel;
-import models.TexturedModel;
-import normalMappingObjConverter.NormalMappedObjLoader;
-import particles.Particle;
-import particles.ParticleMaster;
-import physics.AABB;
-import physics.CollisionManager;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
@@ -29,11 +18,19 @@ import entities.Light;
 import entities.MobileEntity;
 import entities.MobileEntityManager;
 import entities.Player;
-import fontMeshCreator.FontType;
-import fontMeshCreator.GUIText;
 import fontRendering.TextMaster;
 import guis.GuiRenderer;
 import guis.GuiTexture;
+import models.ModelData;
+import models.OBJFileLoader;
+import models.RawModel;
+import models.TexturedModel;
+import normalMappingObjConverter.NormalMappedObjLoader;
+import particles.Particle;
+import particles.ParticleMaster;
+import particles.ParticleSystem;
+import particles.ParticleTexture;
+import physics.CollisionManager;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.MasterRenderer;
@@ -124,6 +121,9 @@ public class MainGameLoop {
 		WaterTile water = new WaterTile(100,100,-5);
 		waters.add(water);
 		
+		ParticleTexture texture = new ParticleTexture(loader.loadTexture("fire_particle"), 8);
+		ParticleSystem particleSystem = new ParticleSystem(texture, 100.0f, 5.0f, 0.1f, 2.0f);
+		
 		while(!Display.isCloseRequested()){
 			//update entities
 			mobileEntityManager.updateEntities(terrain);
@@ -139,11 +139,12 @@ public class MainGameLoop {
 			mousePicker.update();
 			
 			//particles
-			if(Keyboard.isKeyDown(Keyboard.KEY_Y)){
-				Particle p = new Particle(new Vector3f(player.getPosition()),new Vector3f(player.getVelocity()), 1.0f, 4.0f, 0, 1 );
-				p.getVelocity().y += 10.0f;
-			}
-			ParticleMaster.update();
+			//if(Keyboard.isKeyDown(Keyboard.KEY_Y)){
+			//	Particle p = new Particle(new Vector3f(player.getPosition()),new Vector3f(player.getVelocity()), 1.0f, 4.0f, 0, 1 );
+			//	p.getVelocity().y += 10.0f;
+			//}
+			ParticleMaster.update(camera);
+			particleSystem.generateParticles(player.getPosition());
 			
 			Vector3f mousePoint = mousePicker.getCurrentTerrainPoint();
 			if(mousePoint != null){
