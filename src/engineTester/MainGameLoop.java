@@ -121,8 +121,8 @@ public class MainGameLoop {
 		WaterTile water = new WaterTile(100,100,-5);
 		waters.add(water);
 		
-		ParticleTexture texture = new ParticleTexture(loader.loadTexture("fire_particle"), 8);
-		ParticleSystem particleSystem = new ParticleSystem(texture, 100.0f, 5.0f, 0.1f, 2.0f);
+		ParticleTexture texture = new ParticleTexture(loader.loadTexture("fire_particle"), 8, false);
+		ParticleSystem particleSystem = new ParticleSystem(texture, 100.0f, 5.0f, 0.1f, 2.0f, 2.0f);
 		
 		while(!Display.isCloseRequested()){
 			//update entities

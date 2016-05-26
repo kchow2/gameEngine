@@ -25,7 +25,8 @@ public class ParticleMaster {
 	public static void update(Camera camera){
 		Iterator<Entry<ParticleTexture, List<Particle>>> mapIterator = particles.entrySet().iterator();
 		while(mapIterator.hasNext()){
-			List<Particle> list = mapIterator.next().getValue();
+			Entry<ParticleTexture, List<Particle>> entry = mapIterator.next();
+			List<Particle> list = entry.getValue();
 			Iterator<Particle> iterator = list.iterator();
 			while(iterator.hasNext()){
 				Particle p = iterator.next();
@@ -37,11 +38,15 @@ public class ParticleMaster {
 					}
 				}
 			}
-			Collections.sort(list, new Comparator<Particle>(){
-				@Override
-				public int compare(Particle p1, Particle p2) {
-					return p2.getDistance() > p1.getDistance() ? 1 : -1;
-				}});
+			
+			//the particles only need to be sorted by distance from camera if they are not additive, since additive blending is order independent.
+			if(!entry.getKey().isAdditive()){
+				Collections.sort(list, new Comparator<Particle>(){
+					@Override
+					public int compare(Particle p1, Particle p2) {
+						return p2.getDistance() > p1.getDistance() ? 1 : -1;
+					}});
+			}
 		}
 
 	}
