@@ -3,7 +3,6 @@ package engineTester;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
@@ -26,14 +25,12 @@ import models.OBJFileLoader;
 import models.RawModel;
 import models.TexturedModel;
 import normalMappingObjConverter.NormalMappedObjLoader;
-import particles.Particle;
 import particles.ParticleMaster;
-import particles.ParticleSystem;
-import particles.ParticleTexture;
 import physics.CollisionManager;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.MasterRenderer;
+import renderEngine.ModelCache;
 import terrain.Terrain;
 import textures.ModelTexture;
 import textures.TerrainTexture;
@@ -81,12 +78,13 @@ public class MainGameLoop {
 		terrains.add(terrain);
 		//Terrain terrain2 = new Terrain(1,-1,loader, new ModelTexture(loader.loadTexture("stallTexture")));
 		
+		//Model Cache
+		ModelCache modelCache = new ModelCache(loader);
+		
 		//Player
-		ModelData modelData = OBJFileLoader.loadOBJ("cube");
-		RawModel playerModelRaw = loader.loadToVAO(modelData.getVertices(), modelData.getTextureCoords(), modelData.getNormals(), modelData.getIndices());
-		TexturedModel playerModel = new TexturedModel(playerModelRaw, new ModelTexture(loader.loadTexture("player")));
-		Player player = new Player(playerModel, new Vector3f(100,0,100),0,135.0f,0,1.0f, modelData.getAABB());
-		//CollisionManager.addBoundingBox(modelData.getAABB());
+		TexturedModel playerModel = modelCache.loadModel("tank");
+		Player player = new Player(playerModel, new Vector3f(100,0,100),0,135.0f,0,1.0f, modelCache.getAABB("tank"));
+
 		Camera camera = new Camera(player);
 		camera.setDistanceFromPlayer(20.0f);
 		camera.setAngleAroundPlayer(0.0f);
@@ -95,6 +93,10 @@ public class MainGameLoop {
 		EntityManager entityManager = new EntityManager();
 		entityManager.populateWorld(loader, terrain);
 		entityManager.addEntity(player);
+
+		//nav
+		Entity nav = new Entity(modelCache.loadModel("nav"), new Vector3f(105,0,105),0,135.0f,0,1.0f);
+		entityManager.addEntity(nav);
 		
 		List<Entity> normalMapEntities = new ArrayList<Entity>();
 		TexturedModel barrelModel = new TexturedModel(NormalMappedObjLoader.loadOBJ("barrel", loader), new ModelTexture(loader.loadTexture("barrel")));
@@ -106,6 +108,14 @@ public class MainGameLoop {
 		MobileEntityManager mobileEntityManager = new MobileEntityManager();
 		mobileEntityManager.populateWorld(entityManager, loader, terrain);	
 		mobileEntityManager.addEntity(player);
+		
+		MobileEntity entityMushroom = new MobileEntity(modelCache.loadModel("mushroom"), new Vector3f(105,0,105),0,135.0f,0,1.0f, modelCache.getAABB("mushroom"));
+		entityManager.addEntity(entityMushroom);
+		mobileEntityManager.addEntity(entityMushroom);
+		
+		MobileEntity entityTank = new MobileEntity(modelCache.loadModel("tank"), new Vector3f(115,0,115),0,135.0f,0,1.0f, modelCache.getAABB("tank"));
+		entityManager.addEntity(entityTank);
+		mobileEntityManager.addEntity(entityTank);
 		
 		List<GuiTexture> guis = new ArrayList<GuiTexture>();
 		GuiTexture targetingReticle = new GuiTexture(loader.loadTexture("target"), new Vector2f(0f,0f), new Vector2f(0.1f,0.1f));
@@ -121,8 +131,8 @@ public class MainGameLoop {
 		WaterTile water = new WaterTile(100,100,-5);
 		waters.add(water);
 		
-		ParticleTexture texture = new ParticleTexture(loader.loadTexture("fire_particle"), 8, false);
-		ParticleSystem particleSystem = new ParticleSystem(texture, 100.0f, 5.0f, 0.1f, 2.0f, 2.0f);
+		//ParticleTexture texture = new ParticleTexture(loader.loadTexture("fire_particle"), 8, false);
+		//ParticleSystem particleSystem = new ParticleSystem(texture, 100.0f, 5.0f, 0.1f, 2.0f, 2.0f);
 		
 		while(!Display.isCloseRequested()){
 			//update entities
@@ -144,7 +154,7 @@ public class MainGameLoop {
 			//	p.getVelocity().y += 10.0f;
 			//}
 			ParticleMaster.update(camera);
-			particleSystem.generateParticles(player.getPosition());
+			//particleSystem.generateParticles(player.getPosition());
 			
 			Vector3f mousePoint = mousePicker.getCurrentTerrainPoint();
 			if(mousePoint != null){
