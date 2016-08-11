@@ -10,5 +10,7 @@
 	<classpathentry kind="lib" path="C:/Users/Kevin/Desktop/LWJGL Dev/gameEngine/lib/jar/lwjgl_util.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Kevin/Desktop/LWJGL Dev/gameEngine/lib/jar/slick-util.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Kevin/Desktop/LWJGL Dev/gameEngine/lib/jar/PNGDecoder.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Kevin/Desktop/LWJGL Dev/gameEngine/lib/jar/ini4j-0.5.4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Kevin/Desktop/LWJGL Dev/gameEngine/lib/jar/ini4j-0.5.4-jdk14.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

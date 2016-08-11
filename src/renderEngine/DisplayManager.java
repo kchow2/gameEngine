@@ -15,6 +15,9 @@ public class DisplayManager {
 	
 	private static long lastFrameTime;
 	private static float delta;
+	private static long lastFrameCountTime;
+	private static int frameCount;
+	private static int lastFps;
 	
 	public static void createDisplay(){
 		ContextAttribs attribs = new ContextAttribs(3,3)
@@ -30,6 +33,9 @@ public class DisplayManager {
 		
 		GL11.glViewport(0, 0, WIDTH, HEIGHT);
 		lastFrameTime = getCurrentTime();
+		lastFrameCountTime = lastFrameTime;
+		frameCount = 0;
+		lastFps = 0;
 	}
 	public static void updateDisplay(){
 		Display.sync(FPS_CAP);
@@ -38,10 +44,31 @@ public class DisplayManager {
 		long currentFrameTime = getCurrentTime();
 		delta = (currentFrameTime - lastFrameTime) / 1000.0f;
 		lastFrameTime = currentFrameTime;
+		
+		//fps counter that updates every 1/2 second
+		frameCount++;
+		if(currentFrameTime - lastFrameCountTime > 500){
+			lastFrameCountTime = currentFrameTime;
+			lastFps = frameCount * 2;
+			frameCount = 0;
+			//System.out.println("here");
+		}
+	}
+	
+	public static int getScreenWidth(){
+		return WIDTH;
+	}
+	
+	public static int getScreenHeight(){
+		return HEIGHT;
 	}
 	
 	public static float getFrameTimeSeconds(){
 		return delta;
+	}
+	
+	public static int getFps(){
+		return lastFps;
 	}
 	
 	public static void closeDisplay(){

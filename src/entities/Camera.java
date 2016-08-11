@@ -12,9 +12,9 @@ public class Camera {
 	private Vector3f position = new Vector3f(0,0,0);
 	private float pitch, yaw;
 	
-	private Player player;
+	private Entity player;
 	
-	public Camera(Player player){
+	public Camera(Entity player){
 		this.player = player;
 	}
 	

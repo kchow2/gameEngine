@@ -1,5 +1,6 @@
 package renderEngine;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,7 +46,15 @@ public class ModelCache {
 		ModelData modelData = OBJFileLoader.loadOBJ(modelName);
 		if(modelData != null){
 			RawModel rawModel = loader.loadToVAO(modelData.getVertices(), modelData.getTextureCoords(), modelData.getNormals(), modelData.getIndices());
-			TexturedModel texturedModel = new TexturedModel(rawModel, new ModelTexture(loader.loadTexture(modelName)));
+			int modelTextureId;
+			try{
+				modelTextureId = loader.loadTexture(modelName);
+			}
+			catch(IOException e){
+				System.err.println("Failed to load texture for model '"+ modelName +"'.");
+				return null;
+			}
+			TexturedModel texturedModel = new TexturedModel(rawModel, new ModelTexture(modelTextureId));
 			this.models.put(modelName, new LoadedModel(modelData, rawModel, texturedModel));
 			return texturedModel;
 		}

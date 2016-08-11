@@ -1,8 +1,13 @@
 package engineTester;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 
+import org.ini4j.Ini;
+import org.ini4j.Profile.Section;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
@@ -12,50 +17,48 @@ import org.lwjgl.util.vector.Vector4f;
 
 import entities.Camera;
 import entities.Entity;
-import entities.EntityManager;
+import entities.HoverCraftComponent;
 import entities.Light;
-import entities.MobileEntity;
-import entities.MobileEntityManager;
 import entities.Player;
+import fontMeshCreator.FontType;
+import fontMeshCreator.GUIText;
 import fontRendering.TextMaster;
 import guis.GuiRenderer;
 import guis.GuiTexture;
-import models.ModelData;
-import models.OBJFileLoader;
-import models.RawModel;
-import models.TexturedModel;
-import normalMappingObjConverter.NormalMappedObjLoader;
 import particles.ParticleMaster;
 import physics.CollisionManager;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.MasterRenderer;
-import renderEngine.ModelCache;
-import terrain.Terrain;
-import textures.ModelTexture;
-import textures.TerrainTexture;
-import textures.TerrainTexturePack;
+import toolbox.MouseHelper;
 import toolbox.MousePicker;
 import water.WaterFrameBuffers;
 import water.WaterRenderer;
 import water.WaterShader;
 import water.WaterTile;
+import world.World;
 
 public class MainGameLoop {
-	public static void main(String[] args){
+	public static void main(String[] args){	
+		//testINI();
 		DisplayManager.createDisplay();
 		
 		Loader loader = new Loader();
 		MasterRenderer renderer = new MasterRenderer(loader);
+		World world = new World(loader);
 		TextMaster.init(loader);
 		ParticleMaster.init(loader, renderer.getProjectionMatrix());
 		
-		//FontType font = new FontType(loader.loadTexture("arial"), new File("res/arial.fnt"));
-		//GUIText text = new GUIText("Hello World!", 10.0f, font, new Vector2f(0.1f,0.2f), 0.5f, false);
-		//text.setColour(1, 0, 1);
+		FontType font = null;
+		try{
+			font = new FontType(loader.loadTexture("arial"), new File("res/arial.fnt"));
+			
+		} catch(IOException e){
+			System.err.println("Failed to load res/arial.fnt");
+		}
+		GUIText fpsCounterText = new GUIText("0", 2.0f, font, new Vector2f(0.01f, 0.0f), 0.5f, false);
+		fpsCounterText.setColour(1, 1, 0);
 		
-		//Light light = 
-		//Light light2 = new Light(new Vector3f(200,1000,200), new Vector3f(0.0f,1,1));
 		List<Light> lights = new ArrayList<Light>();
 		Light sun = new Light(new Vector3f(300,100,300), new Vector3f(0.8f,0.8f,0.8f), new Vector3f(1,0,0));
 		lights.add(sun);
@@ -64,65 +67,26 @@ public class MainGameLoop {
 		Light playerLight = new Light(new Vector3f(0,0,0), new Vector3f(0.7f,0.7f,0.7f),  new Vector3f(0.5f,0.005f,0.009f));
 		lights.add(playerLight);
 		
-		TerrainTexture backgroundTexture = new TerrainTexture(loader.loadTexture("grass01"));
-		TerrainTexture rTexture = new TerrainTexture(loader.loadTexture("mud"));
-		TerrainTexture gTexture = new TerrainTexture(loader.loadTexture("grassFlowers"));
-		TerrainTexture bTexture = new TerrainTexture(loader.loadTexture("path"));
-		TerrainTexture blendMap = new TerrainTexture(loader.loadTexture("blendMap"));
+		Entity entityPlayer = world.createEntity("tank", new Vector3f(100,0,100), true);
+		entityPlayer.addComponent(new HoverCraftComponent(entityPlayer));
+		Player player = new Player(entityPlayer);
 		
-		TerrainTexturePack texturePack = new TerrainTexturePack(
-				backgroundTexture, rTexture, gTexture, bTexture);
-
-		Terrain terrain = new Terrain(0, 0, loader, texturePack, blendMap, "heightMap");
-		List<Terrain> terrains = new ArrayList<Terrain>();
-		terrains.add(terrain);
-		//Terrain terrain2 = new Terrain(1,-1,loader, new ModelTexture(loader.loadTexture("stallTexture")));
+		world.populateEntities();
 		
-		//Model Cache
-		ModelCache modelCache = new ModelCache(loader);
-		
-		//Player
-		TexturedModel playerModel = modelCache.loadModel("tank");
-		Player player = new Player(playerModel, new Vector3f(100,0,100),0,135.0f,0,1.0f, modelCache.getAABB("tank"));
-
-		Camera camera = new Camera(player);
+		//Camera
+		Camera camera = new Camera(entityPlayer);
 		camera.setDistanceFromPlayer(20.0f);
 		camera.setAngleAroundPlayer(0.0f);
 		camera.setPitch(15.0f);
-		
-		EntityManager entityManager = new EntityManager();
-		entityManager.populateWorld(loader, terrain);
-		entityManager.addEntity(player);
 
-		//nav
-		Entity nav = new Entity(modelCache.loadModel("nav"), new Vector3f(105,0,105),0,135.0f,0,1.0f);
-		entityManager.addEntity(nav);
-		
-		List<Entity> normalMapEntities = new ArrayList<Entity>();
-		TexturedModel barrelModel = new TexturedModel(NormalMappedObjLoader.loadOBJ("barrel", loader), new ModelTexture(loader.loadTexture("barrel")));
-		barrelModel.getTexture().setNormalMap(loader.loadTexture("barrelNormal"));
-		barrelModel.getTexture().setShineDamper(10.0f);
-		barrelModel.getTexture().setReflectivity(0.5f);
-		normalMapEntities.add(new Entity(barrelModel, new Vector3f(75,10,75), 0,0,0,1f));
-		
-		MobileEntityManager mobileEntityManager = new MobileEntityManager();
-		mobileEntityManager.populateWorld(entityManager, loader, terrain);	
-		mobileEntityManager.addEntity(player);
-		
-		MobileEntity entityMushroom = new MobileEntity(modelCache.loadModel("mushroom"), new Vector3f(105,0,105),0,135.0f,0,1.0f, modelCache.getAABB("mushroom"));
-		entityManager.addEntity(entityMushroom);
-		mobileEntityManager.addEntity(entityMushroom);
-		
-		MobileEntity entityTank = new MobileEntity(modelCache.loadModel("tank"), new Vector3f(115,0,115),0,135.0f,0,1.0f, modelCache.getAABB("tank"));
-		entityManager.addEntity(entityTank);
-		mobileEntityManager.addEntity(entityTank);
 		
 		List<GuiTexture> guis = new ArrayList<GuiTexture>();
-		GuiTexture targetingReticle = new GuiTexture(loader.loadTexture("target"), new Vector2f(0f,0f), new Vector2f(0.1f,0.1f));
-		guis.add(targetingReticle);
+		//GuiTexture targetingReticle = new GuiTexture(loader.loadTexture("target"), new Vector2f(0f,0f), new Vector2f(0.1f,0.1f));
+		//guis.add(targetingReticle);
+		//targetingReticle.hide();
 		GuiRenderer guiRenderer = new GuiRenderer(loader);
 		
-		MousePicker mousePicker = new MousePicker(camera, renderer.getProjectionMatrix(), terrain);
+		MousePicker mousePicker = new MousePicker(camera, renderer.getProjectionMatrix(), world.getTerrain());
 
 		WaterFrameBuffers fbos = new WaterFrameBuffers();
 		List<WaterTile> waters = new ArrayList<WaterTile>();
@@ -133,20 +97,23 @@ public class MainGameLoop {
 		
 		//ParticleTexture texture = new ParticleTexture(loader.loadTexture("fire_particle"), 8, false);
 		//ParticleSystem particleSystem = new ParticleSystem(texture, 100.0f, 5.0f, 0.1f, 2.0f, 2.0f);
+		int fps = 0, prevFps = 0;
 		
 		while(!Display.isCloseRequested()){
-			//update entities
-			mobileEntityManager.updateEntities(terrain);
 			
-			//update player+camera
-			player.move(terrain, mobileEntityManager);
-			camera.move();
+			//update mouse
+			MouseHelper.update();
 			
-			//check for collisions
-			CollisionManager.checkCollisions();
+			//update player
+			player.checkInputs();
+			
+			
+			//update world + entities
+			world.update();
 			
 			//mousepicker + light following mouse
 			mousePicker.update();
+			camera.move();
 			
 			//particles
 			//if(Keyboard.isKeyDown(Keyboard.KEY_Y)){
@@ -158,7 +125,7 @@ public class MainGameLoop {
 			
 			Vector3f mousePoint = mousePicker.getCurrentTerrainPoint();
 			if(mousePoint != null){
-				Vector3f terrainNormal = terrain.getTerrainNormal(mousePoint.x, mousePoint.z);
+				Vector3f terrainNormal = world.getTerrain().getTerrainNormal(mousePoint.x, mousePoint.z);
 				if(terrainNormal != null){
 					Vector3f lightPos = new Vector3f(mousePoint.x+3*terrainNormal.x, mousePoint.y+3*terrainNormal.y, mousePoint.z+3*terrainNormal.z);
 					playerLight.setPosition(lightPos);
@@ -170,18 +137,18 @@ public class MainGameLoop {
 			float distance = 2*(camera.getPosition().y - water.getHeight());
 			camera.getPosition().y -= distance;
 			camera.invertPitch();
-			renderer.renderScene(entityManager.getEntities(), normalMapEntities, terrains, lights, camera, new Vector4f(0,1,0,-water.getHeight()));
+			renderer.renderScene(world.getEntities(), world.getNormalMapEntities(), world.getTerrains(), lights, camera, new Vector4f(0,1,0,-water.getHeight()));
 			camera.getPosition().y += distance;
 			camera.invertPitch();
 			fbos.bindRefractionFrameBuffer();
-			renderer.renderScene(entityManager.getEntities(), normalMapEntities, terrains, lights, camera, new Vector4f(0,-1,0,water.getHeight()));
+			renderer.renderScene(world.getEntities(), world.getNormalMapEntities(), world.getTerrains(), lights, camera, new Vector4f(0,-1,0,water.getHeight()));
 			fbos.unbindCurrentFrameBuffer();
 			GL11.glDisable(GL30.GL_CLIP_DISTANCE0);
 			
-			renderer.renderScene(entityManager.getEntities(), normalMapEntities, terrains, lights, camera, new Vector4f(0,-1,0,999999));
+			renderer.renderScene(world.getEntities(), world.getNormalMapEntities(), world.getTerrains(), lights, camera, new Vector4f(0,-1,0,999999));
 			waterRenderer.render(waters,  camera, sun);
 			
-			MobileEntity targetedEntity = player.getTargetedEntity();
+			/*Entity targetedEntity = player.getTargetedEntity();
 			if(targetedEntity != null){
 				Vector2f targetingReticleScreenCoords = renderer.worldToScreenCoords(camera, targetedEntity.getPosition());
 				if(targetingReticleScreenCoords != null){	//targeting reticle is on screen
@@ -195,7 +162,17 @@ public class MainGameLoop {
 			}
 			else{
 				targetingReticle.hide();
+			}*/
+			
+			//fps counter
+			fps = DisplayManager.getFps();
+			if(fps != prevFps){
+				TextMaster.removeText(fpsCounterText);
+				fpsCounterText = new GUIText(String.valueOf(fps), 2.0f, font, new Vector2f(0.01f, 0.0f), 0.5f, false);
+				fpsCounterText.setColour(1, 1, 0);
+				prevFps = fps;
 			}
+			
 			ParticleMaster.renderParticles(camera);
 			guiRenderer.render(guis);
 			TextMaster.render();
@@ -203,11 +180,32 @@ public class MainGameLoop {
 		}
 		
 		TextMaster.cleanUp();
+		world.cleanUp();
 		renderer.cleanUp();
 		fbos.cleanUp();
 		waterShader.cleanUp();
 		guiRenderer.cleanUp();
 		loader.cleanUp();
 		DisplayManager.closeDisplay();
+	}
+	
+	private static void testINI(){
+		System.out.println("Reading test.ini...");
+		try{
+			Ini ini = new Ini(new File("res/tank.ini"));
+			for(Entry<String, Section> e : ini.entrySet()){
+				String sectionName = e.getKey();
+				Section section = e.getValue();
+				System.out.println("sectionName="+sectionName);
+				for(Entry<String, String> ent : section.entrySet()){
+					System.out.println(ent.getKey() + " : " + ent.getValue());
+				}
+				
+				
+			}
+		}
+		catch(IOException e){
+			System.out.println("Can't open the ini file!");
+		}
 	}
 }

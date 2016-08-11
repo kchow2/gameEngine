@@ -32,7 +32,6 @@ public class OBJFileLoader {
 		List<Vector2f> textures = new ArrayList<Vector2f>();
 		List<Vector3f> normals = new ArrayList<Vector3f>();
 		List<Integer> indices = new ArrayList<Integer>();
-		AABB aabb = new AABB(null, 0,0,0,0,0,0);
 		try {
 			while (true) {
 				line = reader.readLine();
@@ -78,8 +77,9 @@ public class OBJFileLoader {
 		float[] texturesArray = new float[vertices.size() * 2];
 		float[] normalsArray = new float[vertices.size() * 3];
 		float furthest = convertDataToArrays(vertices, textures, normals, verticesArray,
-				texturesArray, normalsArray, aabb);
+				texturesArray, normalsArray);
 		int[] indicesArray = convertIndicesListToArray(indices);
+		AABB aabb = new AABB(furthest*1.41421356f,furthest*1.41421356f,furthest*1.41421356f);
 		ModelData data = new ModelData(verticesArray, texturesArray, normalsArray, indicesArray,
 				furthest, aabb);
 		return data;
@@ -110,7 +110,7 @@ public class OBJFileLoader {
 
 	private static float convertDataToArrays(List<Vertex> vertices, List<Vector2f> textures,
 			List<Vector3f> normals, float[] verticesArray, float[] texturesArray,
-			float[] normalsArray, AABB aabb) {
+			float[] normalsArray) {
 		float furthestPoint = 0;
 		for (int i = 0; i < vertices.size(); i++) {
 			Vertex currentVertex = vertices.get(i);
@@ -128,20 +128,6 @@ public class OBJFileLoader {
 			normalsArray[i * 3] = normalVector.x;
 			normalsArray[i * 3 + 1] = normalVector.y;
 			normalsArray[i * 3 + 2] = normalVector.z;
-			
-			//keep track of the min/max values of x, y, z for the bounding box calculation
-			if(position.x < aabb.x1)
-				aabb.x1 = position.x;
-			if(position.x > aabb.x2)
-				aabb.x2 = position.x;
-			if(position.y < aabb.y1)
-				aabb.y1 = position.y;
-			if(position.y > aabb.y2)
-				aabb.y2 = position.y;
-			if(position.z < aabb.z1)
-				aabb.z1 = position.z;
-			if(position.z > aabb.z2)
-				aabb.z2 = position.z;
 		}
 		return furthestPoint;
 	}

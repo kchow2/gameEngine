@@ -1,8 +1,7 @@
 package water;
 
+import java.io.IOException;
 import java.util.List;
-
-import models.RawModel;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
@@ -11,11 +10,12 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
+import entities.Camera;
+import entities.Light;
+import models.RawModel;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import toolbox.Maths;
-import entities.Camera;
-import entities.Light;
 
 public class WaterRenderer {
 
@@ -32,15 +32,19 @@ public class WaterRenderer {
 	private float moveFactor = 0.0f;
 
 	public WaterRenderer(Loader loader, WaterShader shader, Matrix4f projectionMatrix, WaterFrameBuffers fbos) {
-		this.shader = shader;
-		this.fbos = fbos;
-		dudvTexture = loader.loadTexture(DUDV_MAP);
-		normalMapTexture = loader.loadTexture(NORMAL_MAP);
-		shader.start();
-		shader.connectTextureUnits();
-		shader.loadProjectionMatrix(projectionMatrix);
-		shader.stop();
-		setUpVAO(loader);
+		try{
+			this.shader = shader;
+			this.fbos = fbos;
+			dudvTexture = loader.loadTexture(DUDV_MAP);
+			normalMapTexture = loader.loadTexture(NORMAL_MAP);
+			shader.start();
+			shader.connectTextureUnits();
+			shader.loadProjectionMatrix(projectionMatrix);
+			shader.stop();
+			setUpVAO(loader);
+		} catch(IOException e){
+			e.printStackTrace();
+		}
 	}
 
 	public void render(List<WaterTile> water, Camera camera, Light sun) {

@@ -108,7 +108,7 @@ public class Loader {
 		return vaoID;
 	}
 	
-	public int loadTexture(String fileName){
+	public int loadTexture(String fileName) throws IOException{
 		Texture texture = null;
 		try {
 			texture = TextureLoader.getTexture("PNG", new FileInputStream("res/"+fileName+".png"));
@@ -120,6 +120,9 @@ public class Loader {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		if(texture == null) throw new IOException("Failed to load texture: "+fileName);
+		
 		int textureID = texture.getTextureID();
 		textures.add(textureID);
 		return textureID;
