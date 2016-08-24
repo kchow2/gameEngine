@@ -74,9 +74,22 @@ public class ModelCache {
 		}
 	}
 	
-	//public void loadNormalMapModel(String modelName, String normalMapTextureName){
-	//	
-	//}
+
+	public TexturedModel dbg_loadRawModelData(String modelName, ModelData modelData){
+		RawModel rawModel = loader.loadToVAO(modelData.getVertices(), modelData.getTextureCoords(), modelData.getNormals(), modelData.getIndices());
+		int modelTextureId;
+		try{
+			modelTextureId = loader.loadTexture(modelName);
+		}
+		catch(IOException e){
+			System.err.println("Failed to load texture for model '"+ modelName +"'.");
+			return null;
+		}
+		TexturedModel texturedModel = new TexturedModel(rawModel, new ModelTexture(modelTextureId));
+		this.models.put(modelName, new LoadedModel(modelData, rawModel, texturedModel));
+		return texturedModel;
+		
+	}
 	
 	public class LoadedModel{
 		public ModelData modelData;

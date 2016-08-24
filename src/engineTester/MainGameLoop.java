@@ -25,8 +25,10 @@ import fontMeshCreator.GUIText;
 import fontRendering.TextMaster;
 import guis.GuiRenderer;
 import guis.GuiTexture;
+import models.FBXFileLoader;
+import models.ModelData;
+import models.TexturedModel;
 import particles.ParticleMaster;
-import physics.CollisionManager;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.MasterRenderer;
@@ -70,6 +72,20 @@ public class MainGameLoop {
 		Entity entityPlayer = world.createEntity("tank", new Vector3f(100,0,100), true);
 		entityPlayer.addComponent(new HoverCraftComponent(entityPlayer));
 		Player player = new Player(entityPlayer);
+		
+		FBXFileLoader fbxLoader = new FBXFileLoader();
+		ModelData modelData = fbxLoader.loadFile("res/test.fbx");
+		if(modelData != null){
+			System.out.println("FBX FILE LOADED SUCCESSFULLY!");
+			TexturedModel texturedModel = world.modelCache.dbg_loadRawModelData("test", modelData);
+			if(texturedModel != null){
+				world.createEntity("test", new Vector3f(150,0,150), false);
+			} else{
+				System.out.println("texturedModel was null!");
+			}
+		} else{
+			System.out.println("FBX FILE FAILED!");
+		}
 		
 		world.populateEntities();
 		

@@ -76,6 +76,13 @@ public class Player{
 			movement.strafe++;
 		}
 		
+		//TURN
+		if(Keyboard.isKeyDown(Keyboard.KEY_Q)){
+			movement.turn++;
+		} else if(Keyboard.isKeyDown(Keyboard.KEY_E)){
+			movement.turn--;
+		}
+		
 		//JUMP
 		if(Keyboard.isKeyDown(Keyboard.KEY_SPACE)){
 			movement.jump = 1.0f;

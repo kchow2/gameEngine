@@ -28,7 +28,7 @@ public class World {
 	Loader loader;
 	Terrain terrain;
 	List<Terrain> terrains = new ArrayList<Terrain>();
-	ModelCache modelCache;
+	public ModelCache modelCache;
 	EntityRenderingManager entityManager = new EntityRenderingManager();
 	EntityMovementManager mobileEntityManager = new EntityMovementManager();
 	ProjectileManager projectileManager = new ProjectileManager(entityManager,mobileEntityManager );
