@@ -26,9 +26,6 @@ public class FBXFileLoader {
 	List<Vector3f> normals = new ArrayList<Vector3f>();
 	List<Integer> indices = new ArrayList<Integer>();
 	
-	List<Vertex> vertices2 = new ArrayList<Vertex>();
-	List<Integer> indices2 = new ArrayList<Integer>();
-	
 	public ModelData loadFile(String filename){
 		
 		try{
@@ -93,7 +90,6 @@ public class FBXFileLoader {
 				break;
 			}
 			else if(currentFileOffset == 0){
-				//System.out.println("End of file reached!");
 				break;
 			}
 			
@@ -102,12 +98,11 @@ public class FBXFileLoader {
 			}
 			
 			nodeRecord = readNodeRecord(currentFileOffset);
-			//System.out.println(nodeRecord);
 		}
 		
 		//found the objects node. This is really the only thing we care about...
 		if(objectsNode != null){
-			//printNodeTree(objectsNode, 0);
+			printNodeTree(objectsNode, 0);
 			NodeRecord geometryNode, verticesNode, indicesNode, layerElementNormalNode, normalsNode, layerElementUVNode, uvNode, uvIndexNode;
 			
 			geometryNode = objectsNode.getNodeByName("Geometry");
@@ -234,14 +229,14 @@ public class FBXFileLoader {
 			return null;
 		}
 		
-		
-		//print out debug info...
 		//System.out.println("Vertex count: "+vertices.size());
 		//System.out.println("Indices: "+indices.size());
 		//System.out.println("Normals: "+normals.size());
 		//System.out.println("UVs: "+uvs.size());
 		//System.out.println("UV indices: "+uvIndices.size());
 		
+		//The FBX model may contain quads and N-gons, which will need to be converted to triangles.
+		//triangulateModelData() takes the old indices representing a mix of triangles, quads, and n-gons and converts them to a new indices list of only triangles
 		List<Integer> indices2 = new ArrayList<Integer>();
 		List<Integer> uvIndices2 = new ArrayList<Integer>();
 		List<Vector3f> normals2 = new ArrayList<Vector3f>();
@@ -258,11 +253,6 @@ public class FBXFileLoader {
 		float furthest = convertDataToArrays(vertices, uvs, normals, verticesArray, uvArray, normalsArray);
 		
 		int[] indicesArray = convertIndicesListToArray(indices);
-		
-		//System.out.println("FBX loaded model: condensed vertices: "+verticesArray.length/3);
-		//System.out.println("uv: "+uvArray.length/2);
-		//System.out.println("normals: "+normalsArray.length/3);
-		//System.out.println("indices: "+indicesArray.length);
 		
 		AABB aabb = new AABB(furthest*1.41421356f,furthest*1.41421356f,furthest*1.41421356f);
 		ModelData data = new ModelData(verticesArray, uvArray, normalsArray, indicesArray,
@@ -302,9 +292,6 @@ public class FBXFileLoader {
 			nestedNode.depth = res.depth+1;
 			nestedNodeOffset = nestedNode.endOffset;
 		}
-		
-		//System.out.println(res.toString());
-	
 		return res;
 	}
 	
@@ -374,9 +361,7 @@ public class FBXFileLoader {
 		int sizeInBytes = arrayLength*dataSize;
 		byte[] res = new byte[sizeInBytes];
 		
-		if(encoding != 0){
-			//System.out.println("The property is compressed!");
-			// Decompress the bytes
+		if(encoding != 0){	// If encoding is non-zero then the array is gzip compressed and will need to be inflated.
 			try{
 			    Inflater decompresser = new Inflater();
 			    decompresser.setInput(fileData, in.position(), compressedLength);
@@ -386,8 +371,7 @@ public class FBXFileLoader {
 				e.printStackTrace();
 			}
 		}
-		else{
-			//System.out.println("Not compressed!");
+		else{	//no compression
 			for(int i = 0; i < res.length; i++){
 				res[i] = in.get();
 			}
@@ -404,6 +388,12 @@ public class FBXFileLoader {
 		return res;
 	}
 	
+	/**
+	 * Prints out a tree representation of the NodeRecord and all of its children.
+	 * Useful for debugging.
+	 * @param n - The NodeRecord to be printed out.
+	 * @param depth - should be 0.
+	 */
 	private void printNodeTree(NodeRecord n, int depth){
 		String depthStr = "";
 		for(int i = 0; i < depth; i++){
@@ -415,6 +405,15 @@ public class FBXFileLoader {
 		}
 	}
 	
+	/**
+	 * Transforms the vertex data read from the FBX file to a form our game can use. Since our vertices can only have one normal and UV coord per Vertex, we need to create a new Vertex
+	 * every time the same vertex is used for a different face but with a different normal or UV.
+	 * @param vertices - A list of vertices in the model
+	 * @param indices - A list of vertex indices representing faces of the model. Assumed to be ONLY triangles, and negative indices already corrected.
+	 * @param uvs - A list of UV texture coordinates.
+	 * @param normals - A list of normals for each index in indices. Must be the same length as indices.
+	 * @param uvIndex - An index to a uv coordinate for each index in indices. Must be the same length as indices.
+	 */
 	private static void condenseVertices(List<Vertex> vertices, List<Integer> indices, List<Vector2f> uvs, List<Vector3f> normals, List<Integer> uvIndex) {	
 		for(int i = 0; i < indices.size(); i++){
 			int vertexIdx = indices.get(i);
@@ -429,10 +428,30 @@ public class FBXFileLoader {
 			else if (!currentVertex.isSet()) {
 				currentVertex.setTextureIndex(uvIdx);
 				currentVertex.setNormalIndex(normalIdx);
-				//outIndices.add(vertexIdx);
 			} else {
 				dealWithAlreadyProcessedVertex(currentVertex, i, uvIdx, normalIdx, indices, vertices);
 			}
+		}
+	}
+	
+	private static void dealWithAlreadyProcessedVertex(Vertex previousVertex, int index, int newTextureIndex,
+			int newNormalIndex, List<Integer> indices, List<Vertex> vertices) {
+		if (previousVertex.hasSameTextureAndNormal(newTextureIndex, newNormalIndex)) {
+			//indices.add(previousVertex.getIndex());
+		} else {
+			Vertex anotherVertex = previousVertex.getDuplicateVertex();
+			if (anotherVertex != null) {
+				dealWithAlreadyProcessedVertex(anotherVertex, index, newTextureIndex, newNormalIndex,
+						indices, vertices);
+			} else {
+				Vertex duplicateVertex = new Vertex(vertices.size(), previousVertex.getPosition());
+				duplicateVertex.setTextureIndex(newTextureIndex);
+				duplicateVertex.setNormalIndex(newNormalIndex);
+				previousVertex.setDuplicateVertex(duplicateVertex);
+				vertices.add(duplicateVertex);
+				indices.set(index, duplicateVertex.getIndex());
+			}
+
 		}
 	}
 
@@ -468,27 +487,6 @@ public class FBXFileLoader {
 		return furthestPoint;
 	}
 
-	private static void dealWithAlreadyProcessedVertex(Vertex previousVertex, int index, int newTextureIndex,
-			int newNormalIndex, List<Integer> indices, List<Vertex> vertices) {
-		if (previousVertex.hasSameTextureAndNormal(newTextureIndex, newNormalIndex)) {
-			//indices.add(previousVertex.getIndex());
-		} else {
-			Vertex anotherVertex = previousVertex.getDuplicateVertex();
-			if (anotherVertex != null) {
-				dealWithAlreadyProcessedVertex(anotherVertex, index, newTextureIndex, newNormalIndex,
-						indices, vertices);
-			} else {
-				Vertex duplicateVertex = new Vertex(vertices.size(), previousVertex.getPosition());
-				duplicateVertex.setTextureIndex(newTextureIndex);
-				duplicateVertex.setNormalIndex(newNormalIndex);
-				previousVertex.setDuplicateVertex(duplicateVertex);
-				vertices.add(duplicateVertex);
-				indices.set(index, duplicateVertex.getIndex());
-			}
-
-		}
-	}
-	
 	private static void print_v(List<Vertex> vals){
 		for(Vertex v:vals){
 			System.out.println("Pos:{"+v.getPosition().x+", "+v.getPosition().y+", "+v.getPosition().z+"} UVIndex:"+v.getTextureIndex()+" NormalIndex:"+v.getNormalIndex());
@@ -514,6 +512,15 @@ public class FBXFileLoader {
 		}
 	}
 	
+	/**
+	 * Takes a list of indices representing a mix of triangles, quads, and n-gons as input and generates a new list of indices converting everything to triangles only.
+	 * @param indices - The set of vertex indices to process. This is a mix of triangles, quads, and n-gons. The end of a polygon is denoted by a negative index value. This value must be corrected by taking 2's complement before using it.
+	 * @param uvIndices - The set of UV indices corresponding to the indices.
+	 * @param normals - The set of normals corresponding to the indices.
+	 * @param outIndices - The output indices after processing. These indices represent triangles only. This list will be either the same size or larger than the input list.
+	 * @param outUVIndices - The new UVIndices corresponding to each of the indices.
+	 * @param outNormals - The new normals corresponding to each of the indices.
+	 */
 	private static void triangulateModelData(List<Integer> indices, List<Integer> uvIndices, List<Vector3f> normals, List<Integer> outIndices, List<Integer> outUVIndices, List<Vector3f> outNormals){
 		assert(indices.size()==uvIndices.size() && indices.size()==normals.size());
 		

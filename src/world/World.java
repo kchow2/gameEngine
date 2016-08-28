@@ -154,7 +154,7 @@ public class World {
 		final float MAPSIZE = 800;
 		
 		for(int i = 0; i < NUM_BOXES; i++){
-			this.createEntity("cube", new Vector3f(100,terrain.getTerrainHeight(100, 100),100) , true);	//this.getRandomPosition(XMIN, ZMIN, MAPSIZE, terrain)
+			this.createEntity("cube", new Vector3f(100,terrain.getTerrainHeight(105, 100),105) , true);	//this.getRandomPosition(XMIN, ZMIN, MAPSIZE, terrain)
 		}
 	}
 	

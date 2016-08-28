@@ -69,10 +69,6 @@ public class MainGameLoop {
 		Light playerLight = new Light(new Vector3f(0,0,0), new Vector3f(0.7f,0.7f,0.7f),  new Vector3f(0.5f,0.005f,0.009f));
 		lights.add(playerLight);
 		
-		Entity entityPlayer = world.createEntity("tank", new Vector3f(100,0,100), true);
-		entityPlayer.addComponent(new HoverCraftComponent(entityPlayer));
-		Player player = new Player(entityPlayer);
-		
 		FBXFileLoader fbxLoader = new FBXFileLoader();
 		ModelData modelData = fbxLoader.loadFile("res/test.fbx");
 		if(modelData != null){
@@ -87,6 +83,9 @@ public class MainGameLoop {
 			System.out.println("FBX FILE FAILED!");
 		}
 		
+		Entity entityPlayer = world.createEntity("tank", new Vector3f(100,0,100), true);
+		entityPlayer.addComponent(new HoverCraftComponent(entityPlayer));
+		
 		world.populateEntities();
 		
 		//Camera
@@ -94,6 +93,9 @@ public class MainGameLoop {
 		camera.setDistanceFromPlayer(20.0f);
 		camera.setAngleAroundPlayer(0.0f);
 		camera.setPitch(15.0f);
+		
+		//Player 
+		Player player = new Player(camera, entityPlayer);
 
 		
 		List<GuiTexture> guis = new ArrayList<GuiTexture>();

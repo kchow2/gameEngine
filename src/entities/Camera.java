@@ -3,6 +3,8 @@ package entities;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.util.vector.Vector3f;
 
+import toolbox.MouseHelper;
+
 public class Camera {
 	
 	private float distanceFromPlayer = 50.0f;
@@ -56,15 +58,15 @@ public class Camera {
 	}
 	
 	private void calculatePitch(){
-		if(Mouse.isButtonDown(1)){	//R_BUTTON
-			float pitchChange = Mouse.getDY() * 0.1f;
+		if(Mouse.isButtonDown(2)){	//R_BUTTON
+			float pitchChange = MouseHelper.getDY() * 0.1f;
 			pitch -= pitchChange;
 		}
 	}
 	
 	private void calculateAngleAroundPlayer(){
-		if(Mouse.isButtonDown(1)){	//R_BUTTON
-			float angleChange = Mouse.getDX() * 0.3f;
+		if(Mouse.isButtonDown(2)){	//R_BUTTON
+			float angleChange = MouseHelper.getDX() * 0.3f;
 			angleAroundPlayer -= angleChange;
 		}
 	}

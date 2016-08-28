@@ -69,7 +69,7 @@ public class ModelCache {
 			return this.models.get(modelName).modelData.getAABB();
 		}
 		else{
-			System.err.println("ModelCache.getAABB(): the model has not been loaded!");
+			System.err.println("ModelCache.getAABB(): the model has not been loaded! Model name:'"+modelName+"'");
 			return null;
 		}
 	}

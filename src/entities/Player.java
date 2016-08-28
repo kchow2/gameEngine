@@ -1,49 +1,21 @@
 package entities;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import models.TexturedModel;
-import physics.AABB;
-
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector3f;
-import org.lwjgl.util.vector.Vector4f;
 
-import renderEngine.DisplayManager;
-import renderEngine.ModelCache;
-import terrain.Terrain;
-import toolbox.Maths;
 import toolbox.MouseHelper;
 
 public class Player{
-	
-	//private static final float MAX_VELOCITY = 30.0f;
-	//private static final float SPRINT_ACCELERATION = 100.0f;
-	//private static final float FORWARD_ACCELERATION = 75.0f;
-	//private static final float STRAFE_ACCELERATION = 50.0f;
-	//private static final float TURN_SPEED = 160;
-	//private static final float JUMP_POWER = 30;
-	
-	//private float currentForwardAcceleration = 0;
-	//private float currentStrafeAcceleration = 0;
-	//private float currentVerticalAcceleration = 0;
-	//private float currentTurnSpeed = 0;
-	
-	//private long lastShotTime_ms = 0;
-	//private int shotDelay_ms = 500;
-	//private TexturedModel projectileModel;
-	
-	//private boolean isInAir = false;
 	private EntityMovement movement = new EntityMovement();
 	
 	private Entity entity;
 	private Entity targetedEntity = null;
+	
+	private Camera camera;
 
-	public Player(Entity entity) {
+	public Player(Camera camera, Entity entity) {
+		this.camera = camera;
 		this.entity = entity;
 	}
 	
@@ -103,10 +75,10 @@ public class Player{
 					//System.out.println("target distance: "+distance);
 				}
 			}
-			if(Keyboard.getEventKeyState() && Keyboard.getEventKey() == Keyboard.KEY_G){	//target object
+			if(Keyboard.getEventKeyState() && Keyboard.getEventKey() == Keyboard.KEY_G){	//grab cursor
 				MouseHelper.grabMouse();
 			}
-			if(Keyboard.getEventKeyState() && Keyboard.getEventKey() == Keyboard.KEY_ESCAPE){	//target object
+			if(Keyboard.getEventKeyState() && Keyboard.getEventKey() == Keyboard.KEY_ESCAPE){	//release mouse
 				MouseHelper.releaseMouse();
 			}
 		}
