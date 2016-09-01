@@ -11,11 +11,8 @@ public class Player{
 	
 	private Entity entity;
 	private Entity targetedEntity = null;
-	
-	private Camera camera;
 
-	public Player(Camera camera, Entity entity) {
-		this.camera = camera;
+	public Player(Entity entity) {
 		this.entity = entity;
 	}
 	
@@ -140,9 +137,4 @@ public class Player{
 	public Entity getTargetedEntity(){
 		return this.targetedEntity;
 	}
-	
-	private static long getCurrentTime(){
-		return Sys.getTime()*1000 / Sys.getTimerResolution();
-	}
-
 }

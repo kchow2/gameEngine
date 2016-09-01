@@ -96,13 +96,13 @@ public class FBXFileLoader {
 			if(nodeRecord.name.equals("Objects")){
 				objectsNode = nodeRecord;
 			}
-			
+
 			nodeRecord = readNodeRecord(currentFileOffset);
 		}
 		
 		//found the objects node. This is really the only thing we care about...
 		if(objectsNode != null){
-			printNodeTree(objectsNode, 0);
+			//printNodeTree(objectsNode, 0);
 			NodeRecord geometryNode, verticesNode, indicesNode, layerElementNormalNode, normalsNode, layerElementUVNode, uvNode, uvIndexNode;
 			
 			geometryNode = objectsNode.getNodeByName("Geometry");
@@ -229,12 +229,6 @@ public class FBXFileLoader {
 			return null;
 		}
 		
-		//System.out.println("Vertex count: "+vertices.size());
-		//System.out.println("Indices: "+indices.size());
-		//System.out.println("Normals: "+normals.size());
-		//System.out.println("UVs: "+uvs.size());
-		//System.out.println("UV indices: "+uvIndices.size());
-		
 		//The FBX model may contain quads and N-gons, which will need to be converted to triangles.
 		//triangulateModelData() takes the old indices representing a mix of triangles, quads, and n-gons and converts them to a new indices list of only triangles
 		List<Integer> indices2 = new ArrayList<Integer>();
@@ -273,7 +267,6 @@ public class FBXFileLoader {
 		res.numProperties = in.getInt();
 		res.propertyListLen = in.getInt();
 		res.nameLen = in.get();
-		res.depth = 0;
 		byte[] nameBytes = new byte[res.nameLen];
 		in.get(nameBytes);
 		res.name = new String(nameBytes);
@@ -282,16 +275,20 @@ public class FBXFileLoader {
 			PropertyRecord property = readPropertyRecord(in);
 			res.addProperty(property);
 		}
-		
+
 		//read nested nodes
 		int nestedNodeOffset = res.startOffset+13+res.nameLen+res.propertyListLen;
 
 		while(nestedNodeOffset != 0 && nestedNodeOffset < res.endOffset){
 			NodeRecord nestedNode = readNodeRecord(nestedNodeOffset);
 			res.addChild(nestedNode);
-			nestedNode.depth = res.depth+1;
 			nestedNodeOffset = nestedNode.endOffset;
 		}
+		
+		if(res.name.contains("Animation")){
+			printNodeTree(res, 0);
+		}
+		
 		return res;
 	}
 	
@@ -566,7 +563,6 @@ public class FBXFileLoader {
 	
 	private class NodeRecord{
 		public int startOffset, endOffset, numProperties, propertyListLen, nameLen;
-		public int depth;
 		public String name;
 		public List<PropertyRecord> properties = new ArrayList<PropertyRecord>();
 		public List<NodeRecord> nestedNodes = new ArrayList<NodeRecord>();
@@ -591,9 +587,10 @@ public class FBXFileLoader {
 		public String toString(){
 			String types = "";
 			for(PropertyRecord p:properties){
-				types+=p;
+				types+=p.toString2();
+				types += " ";
 			}
-			return String.format("NodeRecord:{name:'%s' offset:%d properties:%d types=%s children:%d sizeInBytes:%d}", name, startOffset, numProperties, types, nestedNodes.size(), endOffset-startOffset);
+			return String.format("NodeRecord:{name:'%s' offset:%d children:%d sizeInBytes:%d properties:%d {%s}}", name, startOffset, nestedNodes.size(), endOffset-startOffset, numProperties, types);
 		}
 	}
 	
@@ -603,6 +600,40 @@ public class FBXFileLoader {
 		
 		public String toString(){
 			return String.valueOf(typeCode);
+		}
+		
+		public String toString2(){
+			ByteBuffer buf = ByteBuffer.wrap(data);
+			buf.order(ByteOrder.LITTLE_ENDIAN);
+			switch(typeCode){
+			case 'Y':
+				return "Short{"+buf.getShort()+"}";
+			case 'C':
+				return "Boolean{"+buf.get()+"}";
+			case 'I':
+				return "Int{"+buf.getInt()+"}";
+			case 'F':
+				return "Float{"+buf.getFloat()+"}";
+			case 'D':
+				return "Double{"+buf.getDouble()+"}";
+			case 'L':
+				return "Long{"+buf.getLong()+"}";
+			case 'f':
+				return "Float[]{ size:"+data.length/4+"}";
+			case 'd':
+				return "Double[]{ size:"+data.length/8+"}";
+			case 'l':
+				return "Long[]{ size:"+data.length/8+"}";
+			case 'i':
+				return "Int[]{ size:"+data.length/4+"}";
+			case 'b':
+				return "Boolean[]{ size:"+data.length+"}";
+			case 'S':
+				return "String{'"+new String(data)+"'}";
+			}
+			
+			
+			return "???{}";
 		}
 	}
 }

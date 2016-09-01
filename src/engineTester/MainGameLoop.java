@@ -95,7 +95,7 @@ public class MainGameLoop {
 		camera.setPitch(15.0f);
 		
 		//Player 
-		Player player = new Player(camera, entityPlayer);
+		Player player = new Player(entityPlayer);
 
 		
 		List<GuiTexture> guis = new ArrayList<GuiTexture>();
