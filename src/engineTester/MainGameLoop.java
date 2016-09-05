@@ -25,9 +25,9 @@ import fontMeshCreator.GUIText;
 import fontRendering.TextMaster;
 import guis.GuiRenderer;
 import guis.GuiTexture;
-import models.FBXFileLoader;
 import models.ModelData;
 import models.TexturedModel;
+import models.ThreeDSFileLoader;
 import particles.ParticleMaster;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
@@ -69,10 +69,10 @@ public class MainGameLoop {
 		Light playerLight = new Light(new Vector3f(0,0,0), new Vector3f(0.7f,0.7f,0.7f),  new Vector3f(0.5f,0.005f,0.009f));
 		lights.add(playerLight);
 		
-		FBXFileLoader fbxLoader = new FBXFileLoader();
-		ModelData modelData = fbxLoader.loadFile("res/test.fbx");
+		ThreeDSFileLoader threeDSLoader = new ThreeDSFileLoader();
+		ModelData modelData = threeDSLoader.loadFile("res/test.3ds");
 		if(modelData != null){
-			System.out.println("FBX FILE LOADED SUCCESSFULLY!");
+			System.out.println("3DS FILE LOADED SUCCESSFULLY!");
 			TexturedModel texturedModel = world.modelCache.dbg_loadRawModelData("test", modelData);
 			if(texturedModel != null){
 				world.createEntity("test", new Vector3f(150,0,150), false);
@@ -80,7 +80,7 @@ public class MainGameLoop {
 				System.out.println("texturedModel was null!");
 			}
 		} else{
-			System.out.println("FBX FILE FAILED!");
+			System.out.println("3DS FILE FAILED!");
 		}
 		
 		Entity entityPlayer = world.createEntity("tank", new Vector3f(100,0,100), true);

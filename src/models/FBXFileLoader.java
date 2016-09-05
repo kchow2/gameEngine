@@ -26,6 +26,9 @@ public class FBXFileLoader {
 	List<Vector3f> normals = new ArrayList<Vector3f>();
 	List<Integer> indices = new ArrayList<Integer>();
 	
+	int animationCurveCount = 0;
+	int animationCurveNodeCount = 0;
+	
 	public ModelData loadFile(String filename){
 		
 		try{
@@ -251,6 +254,8 @@ public class FBXFileLoader {
 		AABB aabb = new AABB(furthest*1.41421356f,furthest*1.41421356f,furthest*1.41421356f);
 		ModelData data = new ModelData(verticesArray, uvArray, normalsArray, indicesArray,
 				furthest, aabb);
+		
+		System.out.println("animationCurveCount="+animationCurveCount+" animationCurveNodeCount="+animationCurveNodeCount);
 		return data;
 	}
 	
@@ -285,10 +290,16 @@ public class FBXFileLoader {
 			nestedNodeOffset = nestedNode.endOffset;
 		}
 		
+		
 		if(res.name.contains("Animation")){
 			printNodeTree(res, 0);
+			if(res.name.equals("AnimationCurve")){
+				animationCurveCount++;
+			}
+			else if(res.name.equals("AnimationCurveNode")){
+				animationCurveNodeCount++;
+			}
 		}
-		
 		return res;
 	}
 	
