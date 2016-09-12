@@ -19,6 +19,7 @@ import models.TexturedModel;
 public class EntityRenderingManager {
 	
 	private static List<Entity> entities = new ArrayList<Entity>();
+	private static List<Entity>	hiddenEntities = new ArrayList<Entity>();
 	
 	public EntityRenderingManager(){
 		
@@ -34,6 +35,20 @@ public class EntityRenderingManager {
 	
 	public void removeEntity(Entity e){
 		entities.remove(e);
+	}
+	
+	public void hideEntity(Entity e){
+		entities.remove(e);
+		if(!hiddenEntities.contains(e)){
+			hiddenEntities.add(e);
+		}
+	}
+	
+	public void showEntity(Entity e){
+		if(!entities.contains(e)){
+			entities.add(e);
+		}
+		hiddenEntities.remove(e);
 	}
 	
 	public void renderAllEntities(MasterRenderer renderer){

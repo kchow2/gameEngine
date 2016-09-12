@@ -4,9 +4,11 @@ import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import toolbox.KeyboardEventListener;
+import toolbox.KeyboardHelper;
 import toolbox.MouseHelper;
 
-public class Player{
+public class Player implements KeyboardEventListener{
 	private EntityMovement movement = new EntityMovement();
 	
 	private Entity entity;
@@ -14,6 +16,7 @@ public class Player{
 
 	public Player(Entity entity) {
 		this.entity = entity;
+		KeyboardHelper.addListener(this);
 	}
 	
 	public Entity getEntity(){
@@ -64,21 +67,6 @@ public class Player{
 		
 		//handle keyboard key events (non-polling)
 		//These events are for processing non-movement commands, so multiple commands don't get issued if the key is held down
-		while(Keyboard.next()){	
-			if(Keyboard.getEventKeyState() && Keyboard.getEventKey() == Keyboard.KEY_T){	//target object
-				//this.targetedEntity = getEntityPlayerIsLookingAt(mobileEntities);
-				if(this.targetedEntity != null){
-					//float distance = getDistanceBetweenEntities(this.targetedEntity, this);
-					//System.out.println("target distance: "+distance);
-				}
-			}
-			if(Keyboard.getEventKeyState() && Keyboard.getEventKey() == Keyboard.KEY_G){	//grab cursor
-				MouseHelper.grabMouse();
-			}
-			if(Keyboard.getEventKeyState() && Keyboard.getEventKey() == Keyboard.KEY_ESCAPE){	//release mouse
-				MouseHelper.releaseMouse();
-			}
-		}
 		
 		if(MouseHelper.isGrabbed()){
 			int mouseDx = MouseHelper.getDX();
@@ -136,5 +124,13 @@ public class Player{
 	
 	public Entity getTargetedEntity(){
 		return this.targetedEntity;
+	}
+
+	@Override
+	public void onKeyEvent(boolean state, int keyCode) {
+		if(state && keyCode == Keyboard.KEY_G)
+			MouseHelper.grabMouse();
+		else if(state && keyCode == Keyboard.KEY_ESCAPE)
+			MouseHelper.releaseMouse();
 	}
 }

@@ -228,25 +228,7 @@ public class DAEFileLoader {
 					uvIndices.add(tIndex);
 				}
 			}
-			
-			System.out.println("//////////////////////");
-			System.out.println("vertices:"+vertices.size());
-			System.out.println("normals:"+normals.size());
-			System.out.println("uvs:"+texCoords.size());
-			System.out.println("indices:"+indices.size());
-			System.out.println("normalIndices:"+normalIndices.size());
-			System.out.println("uvIndices:"+uvIndices.size());
-			System.out.println("//////////////////////");
-			
-			for(int i = 0; i < vertices.size(); i++){
-				System.out.println(vertices.get(i).getPosition());
-			}
-			System.out.println("////////////////////////");
-			System.out.println(p.toString());
-			for(int i = 0; i < indices.size()/3; i++){
-				System.out.println(indices.get(i)+","+indices.get(i+1)+","+indices.get(i+2));
-			}
-			
+
 			condenseVertices(vertices, normals, texCoords, indices, normalIndices, uvIndices);
 			float verticesArray[] = new float[vertices.size()*3];
 			float uvArray[] = new float[vertices.size()*2];

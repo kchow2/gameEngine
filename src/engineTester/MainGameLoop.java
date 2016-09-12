@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 
 import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
@@ -32,6 +33,7 @@ import particles.ParticleMaster;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.MasterRenderer;
+import toolbox.KeyboardHelper;
 import toolbox.MouseHelper;
 import toolbox.MousePicker;
 import water.WaterFrameBuffers;
@@ -89,7 +91,7 @@ public class MainGameLoop {
 		world.populateEntities();
 		
 		//Camera
-		Camera camera = new Camera(entityPlayer);
+		Camera camera = new Camera(entityPlayer, world);
 		camera.setDistanceFromPlayer(20.0f);
 		camera.setAngleAroundPlayer(0.0f);
 		camera.setPitch(15.0f);
@@ -100,7 +102,7 @@ public class MainGameLoop {
 		
 		List<GuiTexture> guis = new ArrayList<GuiTexture>();
 		//GuiTexture targetingReticle = new GuiTexture(loader.loadTexture("target"), new Vector2f(0f,0f), new Vector2f(0.1f,0.1f));
-		//guis.add(targetingReticle);
+		//guis.add(targetingReticlew);
 		//targetingReticle.hide();
 		GuiRenderer guiRenderer = new GuiRenderer(loader);
 		
@@ -119,8 +121,9 @@ public class MainGameLoop {
 		
 		while(!Display.isCloseRequested()){
 			
-			//update mouse
+			//update mouse + keyboard
 			MouseHelper.update();
+			KeyboardHelper.update();
 			
 			//update player
 			player.checkInputs();

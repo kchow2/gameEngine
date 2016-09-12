@@ -99,6 +99,14 @@ public class World {
 		return entity;
 	}
 	
+	public void hideEntity(Entity e){
+		entityManager.hideEntity(e);
+	}
+	
+	public void showEntity(Entity e){
+		entityManager.showEntity(e);
+	}
+	
 	public void populateEntities(){
 		
 		this.populatePlants(modelCache, terrain);
