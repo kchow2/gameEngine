@@ -1,5 +1,8 @@
 package models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import physics.AABB;
 
 public class ModelData {
@@ -11,6 +14,8 @@ public class ModelData {
 	private float furthestPoint;
 	
 	private AABB aabb;	//the enclosing axis aligned bounding box
+	
+	private List<Hardpoint> hardpoints = new ArrayList<Hardpoint>();
 
 	public ModelData(float[] vertices, float[] textureCoords, float[] normals, int[] indices,
 			float furthestPoint, AABB aabb) {
@@ -44,6 +49,22 @@ public class ModelData {
 	
 	public AABB getAABB(){
 		return this.aabb;
+	}
+	
+	public void addHardpoint(Hardpoint hardpoint){
+		this.hardpoints.add(hardpoint);
+	}
+	
+	public Hardpoint getHardpointByName(String name){
+		for(Hardpoint h:hardpoints){
+			if(h.name.equals(name)) 
+				return h;
+		}
+		return null;
+	}
+	
+	public List<Hardpoint> getHardpoints(){
+		return hardpoints;
 	}
 
 }

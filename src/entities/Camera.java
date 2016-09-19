@@ -4,6 +4,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.util.vector.Vector3f;
 
+import renderEngine.DisplayManager;
 import toolbox.KeyboardEventListener;
 import toolbox.KeyboardHelper;
 import toolbox.MouseHelper;
@@ -15,8 +16,14 @@ public class Camera implements KeyboardEventListener{
 	
 	CameraMode cameraMode = CameraMode.THIRD_PERSON;
 	
+	private static final float OVERHEAD_CAMERA_MOVE_SPEED = 45.0f;
+	private static final float DEFAULT_OVERHEAD_CAMERA_HEIGHT = 65.0f;	//the default height of the camera above the terrain
+	
 	private float distanceFromPlayer = 50.0f;
 	private float angleAroundPlayer = 0.0f;
+	
+	//overhead camera settings
+	private float cameraHeight = DEFAULT_OVERHEAD_CAMERA_HEIGHT;
 	
 	
 	private Vector3f position = new Vector3f(0,0,0);
@@ -32,12 +39,31 @@ public class Camera implements KeyboardEventListener{
 	}
 	
 	public void move(){
+		if(cameraMode == CameraMode.OVERHEAD){
+			if(KeyboardHelper.isKeyDown(Keyboard.KEY_LEFT)){
+				this.position.x -= OVERHEAD_CAMERA_MOVE_SPEED*DisplayManager.getFrameTimeSeconds();
+			}
+			if(KeyboardHelper.isKeyDown(Keyboard.KEY_RIGHT)){
+				this.position.x += OVERHEAD_CAMERA_MOVE_SPEED*DisplayManager.getFrameTimeSeconds();
+			}
+			if(KeyboardHelper.isKeyDown(Keyboard.KEY_UP)){
+				this.position.z -= OVERHEAD_CAMERA_MOVE_SPEED*DisplayManager.getFrameTimeSeconds();
+			}
+			if(KeyboardHelper.isKeyDown(Keyboard.KEY_DOWN)){
+				this.position.z += OVERHEAD_CAMERA_MOVE_SPEED*DisplayManager.getFrameTimeSeconds();
+			}
+			
+			this.yaw = 0;
+			this.pitch = 70;
+			this.position.y = world.getTerrain().getTerrainHeight(position.x, position.z) + cameraHeight;
+			
+		}
 		if(cameraMode == CameraMode.FIRST_PERSON){
 			this.position.x = player.getPosition().x;
 			this.position.y = player.getPosition().y;
 			this.position.z = player.getPosition().z;
 			this.pitch = player.rotX;
-			this.yaw = player.rotY;
+			this.yaw = 180.0f - player.rotY;
 		}
 		
 		if(cameraMode == CameraMode.THIRD_PERSON){

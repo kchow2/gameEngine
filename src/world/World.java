@@ -11,9 +11,7 @@ import entities.Entity;
 import entities.EntityMovementManager;
 import entities.EntityRenderingManager;
 import entities.ProjectileManager;
-import models.ModelData;
-import models.OBJFileLoader;
-import models.RawModel;
+import models.Hardpoint;
 import models.TexturedModel;
 import physics.CollisionManager;
 import renderEngine.Loader;
@@ -96,6 +94,10 @@ public class World {
 			mobileEntityManager.addEntity(entity);
 			collisionManager.addCollisionDetection(entity, modelCache.getAABB(entityName));
 		}
+		
+		for( Hardpoint hardpoint:modelCache.getModelData(entityName).getHardpoints()){
+			entity.addHardpoint(hardpoint);
+		}
 		return entity;
 	}
 	
@@ -111,11 +113,6 @@ public class World {
 		
 		this.populatePlants(modelCache, terrain);
 		this.populateCubes(modelCache, terrain);
-		System.out.println("Done populating world.");
-		System.out.println("Entity count: "+entityManager.getEntities().size());
-		System.out.println("Collision object count: "+collisionManager.getObjectCount());
-		System.out.println("Tank AABB="+modelCache.getAABB("tank"));
-		System.out.println("Box AABB="+modelCache.getAABB("cube"));
 	}
 	
 	

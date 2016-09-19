@@ -10,6 +10,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 import org.xml.sax.Attributes;
@@ -40,6 +41,9 @@ public class DAEFileLoader {
 
 	private class DAEParserHandler extends DefaultHandler {
 		
+		private boolean asset_node = false;
+		private boolean upAxis_node = false;
+		
 		private boolean library_geometries = false;
 		private boolean geometry_node = false;
 		private boolean mesh_node = false;
@@ -50,6 +54,13 @@ public class DAEFileLoader {
 		private boolean vCount_node = false;
 		private boolean p_node = false;
 		
+		private boolean library_visual_scenes = false;
+		private boolean visualScene_node = false;
+		private boolean sceneNode_node = false;
+		private boolean matrix_node = false;
+	
+		private String upAxis;
+		
 		ColladaGeometry geometry;
 		ColladaMesh mesh;
 		ColladaSource source;
@@ -58,10 +69,19 @@ public class DAEFileLoader {
 		ColladaNameArray nameArray;
 		ColladaInput input;
 		ColladaVertices vertices;
+		ColladaSceneNode sceneNode;
+		
+		private List<ColladaSceneNode> sceneNodes = new ArrayList<ColladaSceneNode>();
 		
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-			if(qName.equals("library_geometries")){
+			if(qName.equals("asset")){
+				asset_node = true;
+			} 
+			else if(asset_node && qName.equals("up_axis")){
+				upAxis_node = true;
+			} 
+			else if(qName.equals("library_geometries")){
 				library_geometries = true;
 			} 
 			else if(library_geometries && qName.equals("geometry")){
@@ -94,11 +114,30 @@ public class DAEFileLoader {
 			else if(vertices_node && qName.equals("input")){
 				beginVerticesInput(attributes.getValue("semantic"), attributes.getValue("source"));
 			}
+			else if(qName.equals("library_visual_scenes")){
+				library_visual_scenes = true;
+			}
+			else if(library_visual_scenes && qName.equals("visual_scene")){
+				visualScene_node = true;
+			}
+			else if(visualScene_node && qName.equals("node")){
+				sceneNode_node = true;
+				beginSceneNode(attributes.getValue("id"), attributes.getValue("name"), attributes.getValue("type"));
+			}
+			else if(sceneNode_node && qName.equals("matrix")){
+				matrix_node = true;
+			}
 		}
 
 		@Override
 		public void endElement(String uri, String localName, String qName) throws SAXException {
-			if(qName.equals("library_geometries")){
+			if(qName.equals("asset")){
+				asset_node = false;
+			}
+			else if(asset_node && qName.equals("up_axis")){
+				upAxis_node = false;
+			}
+			else if(qName.equals("library_geometries")){
 				library_geometries = false;
 			}
 			else if(library_geometries && qName.equals("geometry")){
@@ -131,11 +170,27 @@ public class DAEFileLoader {
 			else if(vertices_node && qName.equals("input")){
 				endVerticesInput();
 			}
+			else if(qName.equals("library_visual_scenes")){
+				library_visual_scenes = false;
+			}
+			else if(library_visual_scenes && qName.equals("visual_scene")){
+				visualScene_node = false;
+			}
+			else if(visualScene_node && qName.equals("node")){
+				sceneNode_node = false;
+				endSceneNode();
+			}
+			else if(sceneNode_node && qName.equals("matrix")){
+				matrix_node = false;
+			}
 		}
 
 		@Override
 		public void characters(char ch[], int start, int length) throws SAXException {
-			if(floatArray_node){
+			if(upAxis_node){
+				this.upAxis = new String(ch, start, length);
+			}
+			else if(floatArray_node){
 				try{
 					String[] floats = new String(ch, start, length).split(" ");
 					for(String f:floats){
@@ -165,6 +220,46 @@ public class DAEFileLoader {
 					System.err.println("DAEFileLoader: error reading vcount value!");
 				}
 			}
+			else if(matrix_node){
+				try{
+					boolean swapYZ = false;
+					if(upAxis.equals("Z_UP"))
+						swapYZ = true;
+					
+					String[] vals = new String(ch, start, length).split(" ");
+					if(vals.length != 16)
+						System.err.println("Error reading matrix - incorrect size!");
+
+					Matrix4f m = new Matrix4f();
+					m.m00 = Float.valueOf(vals[0]);
+					m.m10 = Float.valueOf(vals[1]);
+					m.m20 = Float.valueOf(vals[2]);
+					m.m30 = Float.valueOf(vals[3]);
+					m.m01 = Float.valueOf(vals[4]);
+					m.m11 = Float.valueOf(vals[5]);
+					m.m21 = Float.valueOf(vals[6]);
+					m.m31 = Float.valueOf(vals[7]);
+					m.m02 = Float.valueOf(vals[8]);
+					m.m12 = Float.valueOf(vals[9]);
+					m.m22 = Float.valueOf(vals[10]);
+					m.m32 = Float.valueOf(vals[11]);
+					m.m03 = Float.valueOf(vals[12]);
+					m.m13 = Float.valueOf(vals[13]);
+					m.m23 = Float.valueOf(vals[14]);
+					m.m33 = Float.valueOf(vals[15]);
+					
+					if(swapYZ){
+						float temp = m.m31;
+						m.m31 = m.m32;
+						m.m32 = -temp;
+					}
+					
+					this.sceneNode.transform = m;					
+				} catch(NumberFormatException e){
+					System.err.println("DAEFileLoader: error reading vcount value!");
+				}
+				
+			}
 		}
 		
 		//returns a model in the format used by our game from the model data we read from the collada file.
@@ -185,6 +280,12 @@ public class DAEFileLoader {
 			int nOffset = Integer.valueOf(getInputBySemantic("NORMAL").offset);
 			int tOffset = Integer.valueOf(getInputBySemantic("TEXCOORD").offset);
 			
+			//swap y and z coordinates if blender decides to redefine 'up'
+			boolean swapYZ = false;
+			if(this.upAxis != null && this.upAxis.equals("Z_UP")){
+				swapYZ = true;
+			}
+			
 			List<Integer> p = this.geometry.mesh.polyList.indices;
 			List<Integer> vcount = this.geometry.mesh.polyList.vcount;
 			List<Vertex> vertices = new ArrayList<Vertex>();
@@ -193,16 +294,24 @@ public class DAEFileLoader {
 			List<Integer> indices = new ArrayList<Integer>();
 			List<Integer> normalIndices = new ArrayList<Integer>();
 			List<Integer> uvIndices = new ArrayList<Integer>();
+			
+			int xArrayOffset = 0;
+			int yArrayOffset = 1;
+			int zArrayOffset = 2;
+			
 			for(int i = 0; i < positionsSource.floatArray.data.size()/3; i++){
-				float x = positionsSource.floatArray.data.get(3*i);
-				float y = positionsSource.floatArray.data.get(3*i+1);
-				float z = positionsSource.floatArray.data.get(3*i+2);
-				vertices.add(new Vertex(i, new Vector3f(x,y,z)));
+				float x = positionsSource.floatArray.data.get(3*i+xArrayOffset);
+				float y = positionsSource.floatArray.data.get(3*i+yArrayOffset);
+				float z = positionsSource.floatArray.data.get(3*i+zArrayOffset);
+				if(swapYZ) 
+					vertices.add(new Vertex(i, new Vector3f(x,z,-y)));
+				else 
+					vertices.add(new Vertex(i, new Vector3f(x,y,z)));
 			}
 			for(int i = 0; i < normalsSource.floatArray.data.size()/3; i++){
-				float x = normalsSource.floatArray.data.get(3*i);
-				float y = normalsSource.floatArray.data.get(3*i+1);
-				float z = normalsSource.floatArray.data.get(3*i+2);
+				float x = normalsSource.floatArray.data.get(3*i+xArrayOffset);
+				float y = normalsSource.floatArray.data.get(3*i+yArrayOffset);
+				float z = normalsSource.floatArray.data.get(3*i+zArrayOffset);
 				normals.add(new Vector3f(x,y,z));
 			}
 			for(int i = 0; i < texCoordsSource.floatArray.data.size()/2; i++){
@@ -240,6 +349,13 @@ public class DAEFileLoader {
 			AABB aabb = new AABB(furthest,furthest,furthest);
 			ModelData modelData = new ModelData(verticesArray, uvArray, normalsArray, indicesArray,
 					furthest, aabb);
+			
+			//hardpoints
+			for(ColladaSceneNode node:this.sceneNodes){
+				if(node.name.startsWith("HP_")){
+					modelData.addHardpoint(new Hardpoint(node.name, node.transform));
+				}
+			}
 			
 			return modelData;
 		}
@@ -424,6 +540,14 @@ public class DAEFileLoader {
 		private void endVerticesInput(){
 			
 		}
+		private void beginSceneNode(String id, String name, String type){
+			this.sceneNode = new ColladaSceneNode();
+			this.sceneNode.id = id;
+			this.sceneNode.name = name;
+		}
+		private void endSceneNode(){
+			this.sceneNodes.add(this.sceneNode);
+		}
 		
 		private boolean isDataValid(){
 			if(this.geometry == null){
@@ -526,6 +650,11 @@ public class DAEFileLoader {
 		private class ColladaVertices{
 			String id;
 			ColladaInput input;
+		}
+		private class ColladaSceneNode{
+			String id;
+			String name;
+			Matrix4f transform;
 		}
 	}
 }

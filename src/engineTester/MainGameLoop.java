@@ -8,7 +8,6 @@ import java.util.Map.Entry;
 
 import org.ini4j.Ini;
 import org.ini4j.Profile.Section;
-import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
@@ -27,9 +26,12 @@ import fontRendering.TextMaster;
 import guis.GuiRenderer;
 import guis.GuiTexture;
 import models.DAEFileLoader;
+import models.Hardpoint;
 import models.ModelData;
 import models.TexturedModel;
 import particles.ParticleMaster;
+import particles.ParticleSystem;
+import particles.ParticleTexture;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.MasterRenderer;
@@ -71,21 +73,25 @@ public class MainGameLoop {
 		Light playerLight = new Light(new Vector3f(0,0,0), new Vector3f(0.7f,0.7f,0.7f),  new Vector3f(0.5f,0.005f,0.009f));
 		lights.add(playerLight);
 		
+		Entity testEntity = null;
 		DAEFileLoader modelLoader = new DAEFileLoader();
-		ModelData modelData = modelLoader.load("res/test.dae");
+		ModelData modelData = modelLoader.load("res/tank.dae");
 		if(modelData != null){
 			System.out.println("DAE FILE LOADED SUCCESSFULLY!");
-			TexturedModel texturedModel = world.modelCache.dbg_loadRawModelData("test", modelData);
+			TexturedModel texturedModel = world.modelCache.dbg_loadRawModelData("tank", modelData);
 			if(texturedModel != null){
-				world.createEntity("test", new Vector3f(150,0,150), false);
+				testEntity = world.createEntity("tank", new Vector3f(150,0,150), true);
 			} else{
 				System.out.println("texturedModel was null!");
 			}
 		} else{
 			System.out.println("DAE FILE FAILED!");
 		}
+		for(Hardpoint h:modelData.getHardpoints()){
+			System.out.println(h);
+		}
 		
-		Entity entityPlayer = world.createEntity("tank", new Vector3f(100,0,100), true);
+		Entity entityPlayer = testEntity;//world.createEntity("tank", new Vector3f(100,0,100), true);
 		entityPlayer.addComponent(new HoverCraftComponent(entityPlayer));
 		
 		world.populateEntities();
@@ -115,8 +121,14 @@ public class MainGameLoop {
 		WaterTile water = new WaterTile(100,100,-5);
 		waters.add(water);
 		
-		//ParticleTexture texture = new ParticleTexture(loader.loadTexture("fire_particle"), 8, false);
-		//ParticleSystem particleSystem = new ParticleSystem(texture, 100.0f, 5.0f, 0.1f, 2.0f, 2.0f);
+		ParticleTexture texture = null;
+		ParticleSystem particleSystem = null;
+		try{
+			texture = new ParticleTexture(loader.loadTexture("fire_particle"), 8, false);
+			particleSystem = new ParticleSystem(texture, 100.0f, 5.0f, 0.1f, 2.0f, 2.0f);
+		}catch (IOException e){
+			
+		}
 		int fps = 0, prevFps = 0;
 		
 		while(!Display.isCloseRequested()){
@@ -142,7 +154,11 @@ public class MainGameLoop {
 			//	p.getVelocity().y += 10.0f;
 			//}
 			ParticleMaster.update(camera);
-			//particleSystem.generateParticles(player.getPosition());
+			if(testEntity != null){
+				Vector3f pos = entityPlayer.getHardpointWorldPos("HP_CANNON");
+				if(pos != null)
+					particleSystem.generateParticles(pos);
+			}
 			
 			Vector3f mousePoint = mousePicker.getCurrentTerrainPoint();
 			if(mousePoint != null){

@@ -7,6 +7,7 @@ import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
+import models.Hardpoint;
 import models.TexturedModel;
 import renderEngine.DisplayManager;
 import terrain.Terrain;
@@ -34,6 +35,7 @@ public class Entity {
 	private int textureIndex = 0;
 	
 	private List<IGameComponent> components = new ArrayList<IGameComponent>();
+	private List<Hardpoint> hardpoints = new ArrayList<Hardpoint>();
 	
 	public Entity(TexturedModel model, Vector3f position, float rotX,
 			float rotY, float rotZ, float scale) {
@@ -181,6 +183,31 @@ public class Entity {
 	protected void onTerrainCollide(Terrain terrain){
 		
 	}
+	
+	public void addHardpoint(Hardpoint hardpoint){
+		this.hardpoints.add(hardpoint);
+	}
+	
+	protected Hardpoint getHardpoint(String name){
+		for(Hardpoint h:hardpoints){
+			if(h.name.equals(name))
+				return h;
+		}
+		return null;
+	}
+	public Vector3f getHardpointWorldPos(String hardpointName){
+		Hardpoint h = getHardpoint(hardpointName);
+		if(h != null){
+			Matrix4f entityTrans = Maths.createTransformationMatrix(this.position, rotX, rotY, rotZ, 1.0f);
+			Matrix4f temp = Matrix4f.mul(entityTrans, h.transform, null);
+			Vector4f res = new Vector4f(0,0,0, 1.0f);
+			Matrix4f.transform(temp, res, res);
+			return new Vector3f(res);
+		}
+		else
+			return null;
+	}
+	
 	
 	public void update(Terrain terrain){
 		Vector3f pos = this.getPosition();

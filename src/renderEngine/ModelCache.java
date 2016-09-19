@@ -74,6 +74,16 @@ public class ModelCache {
 		}
 	}
 	
+	public ModelData getModelData(String modelName){
+		if(this.models.containsKey(modelName)){
+			return this.models.get(modelName).modelData;
+		}
+		else{
+			System.err.println("ModelCache.getModelData(): the model has not been loaded! Model name:'"+modelName+"'");
+			return null;
+		}
+	}
+	
 
 	public TexturedModel dbg_loadRawModelData(String modelName, ModelData modelData){
 		RawModel rawModel = loader.loadToVAO(modelData.getVertices(), modelData.getTextureCoords(), modelData.getNormals(), modelData.getIndices());
