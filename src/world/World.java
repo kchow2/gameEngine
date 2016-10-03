@@ -10,9 +10,11 @@ import org.lwjgl.util.vector.Vector3f;
 import entities.Entity;
 import entities.EntityMovementManager;
 import entities.EntityRenderingManager;
+import entities.Explosion;
 import entities.ProjectileManager;
 import models.Hardpoint;
 import models.TexturedModel;
+import physics.AABB;
 import physics.CollisionManager;
 import renderEngine.Loader;
 import renderEngine.ModelCache;
@@ -32,6 +34,8 @@ public class World {
 	ProjectileManager projectileManager = new ProjectileManager(entityManager,mobileEntityManager );
 	CollisionManager collisionManager = new CollisionManager();
 	List<Entity> normalMapEntities = new ArrayList<Entity>();
+	
+	List<Explosion> explosionsToAdd = new ArrayList<Explosion>(); 
 	
 	public World(Loader loader){
 		this.loader = loader;
@@ -69,9 +73,16 @@ public class World {
 	}
 	
 	public void update(){
+		explosionsToAdd.clear();
+		
+		entityManager.update();
 		mobileEntityManager.updateEntities(terrain);
 		projectileManager.update(terrain);
 		collisionManager.checkCollisions();
+		
+		for(Explosion e:explosionsToAdd){
+			addExplosion(e);
+		}
 	}
 	
 	public List<Entity> getEntities(){
@@ -88,17 +99,23 @@ public class World {
 	
 	public Entity createEntity(String entityName, Vector3f position, boolean needsUpdates){
 		TexturedModel model = modelCache.loadModel(entityName);
-		Entity entity = new Entity(model, position, 0, 0, 0, 1.0f );
+		AABB aabb = modelCache.getAABB(entityName);
+		//float modelSize = Math.max(aabb.x2-aabb.x1, aabb.z2-aabb.z1);
+		Entity entity = new Entity(this, model, position, 0, 0, 0, 1.0f);
 		entityManager.addEntity(entity);
 		if(needsUpdates){
 			mobileEntityManager.addEntity(entity);
-			collisionManager.addCollisionDetection(entity, modelCache.getAABB(entityName));
+			collisionManager.addCollisionDetection(entity, aabb);
 		}
 		
 		for( Hardpoint hardpoint:modelCache.getModelData(entityName).getHardpoints()){
 			entity.addHardpoint(hardpoint);
 		}
 		return entity;
+	}
+	
+	public void spawnExplosion(Explosion e){
+		explosionsToAdd.add(e);
 	}
 	
 	public void hideEntity(Entity e){
@@ -168,6 +185,11 @@ public class World {
 		float x = (float)(r.nextDouble()*mapSize+xMin);
 		float z = (float)(r.nextDouble()*mapSize+zMin);
 		return new Vector3f(x, terrain.getTerrainHeight(x, z), z);
+	}
+	
+	private void addExplosion(Explosion e){
+		entityManager.addEntity(e);
+		mobileEntityManager.addEntity(e);
 	}
 	
 }

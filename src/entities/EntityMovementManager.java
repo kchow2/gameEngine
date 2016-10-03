@@ -20,6 +20,7 @@ import textures.ModelTexture;
 //class responsible for movement for all mobile entities in the game
 public class EntityMovementManager {
 private static List<Entity> entities = new ArrayList<Entity>();
+private static List<Entity> deadEntities = new ArrayList<Entity>();
 	
 	public EntityMovementManager(){
 		
@@ -42,13 +43,16 @@ private static List<Entity> entities = new ArrayList<Entity>();
 		if(Keyboard.isKeyDown(Keyboard.KEY_K)){
 			bounce = true;
 		}
+		deadEntities.clear();
 		for(Entity e:entities){
-			
 			if(bounce){
 				e.getVelocity().y = 10.0f;
 			}
 			e.update(terrain);
+			if(!e.isAlive())
+				deadEntities.add(e);
 		}
+		entities.removeAll(deadEntities);
 	}
 	
 	public void cleanUp(){

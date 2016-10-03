@@ -11,7 +11,7 @@ public class HoverCraftComponent implements IGameComponent{
 	private static final float MAX_TURN_RATE = 150.0f;
 	private static final float MAX_PITCH = 15.0f;
 	private static final float MAX_ROLL = 10.0f;
-	private static final float HOVER_HEIGHT = 10.0f;
+	private static final float HOVER_HEIGHT = 0.75f;
 	
 	private Entity entity;
 	
@@ -51,18 +51,11 @@ public class HoverCraftComponent implements IGameComponent{
 		
 		this.entity.addForce(fx, fy, fz);
 		
+		//hover physics
 		float dt = DisplayManager.getFrameTimeSeconds();
-		//float h = this.entity.getPosition().y - terrain.getTerrainHeight(this.entity.getPosition().x, this.entity.getPosition().z) - hoverHeight;
-
-		//float DAMP_FACTOR = 5f;
-		//float antiGrav = Math.max(-10*h, 0.0f);//h < 0 ? 25.0f : 15.0f;
-		//float springForce = Math.max(-(h+DAMP_FACTOR*this.entity.getVelocity().y), 0.0f);
-		//System.out.println(h);
-		
-		//velocHeightCorrection = h < 0 ? 1.0f - 0.5f*h : 0.0f;
-		//accelHeightCorrection = antiGrav + springForce;
-		//this.entity.getVelocity().y += dt*accelHeightCorrection;
-		//this.entity.getPosition().y += velocHeightCorrection*dt;
+		float h = this.entity.getPosition().y - terrain.getTerrainHeight(this.entity.getPosition().x, this.entity.getPosition().z) - HOVER_HEIGHT;
+		float f = Math.max(0.0f, -55.0f*h + Entity.GRAVITY) - 2.5f*entity.getVelocity().y;
+		this.entity.addForce(0, f, 0);
 		
 		float prevPitch = this.entity.rotX;
 		float prevRoll = this.entity.rotZ;
@@ -73,8 +66,11 @@ public class HoverCraftComponent implements IGameComponent{
 		
 		//sample the terrain normals around the craft and apply a rotational force that tries to align the craft to be perpendicular to the average terrain normal.
 		//this.entity.
-		
-		
+		float size = 1.0f;
+		float x0 = this.entity.getPosition().x;
+		float z0 = this.entity.getPosition().z;
+		float h0 = terrain.getTerrainHeight(this.entity.getPosition().x, this.entity.getPosition().z);
+		float h1 = terrain.getTerrainHeight(x0 + (float)(size*Math.sin(Math.toRadians(this.entity.rotY))), z0 + (float)(size*Math.cos(Math.toRadians(this.entity.rotY))));
 	}
 	
 	@Override
@@ -83,7 +79,7 @@ public class HoverCraftComponent implements IGameComponent{
 		engineStrafePower = movement.strafe * MAX_STRAFE_SPEED;
 		engineTurnPower = movement.turn;
 		enginePitchPower = movement.pitchUp;
-		engineJumpPower = movement.jump * 40.0f;
+		engineJumpPower = movement.jump * (40.0f+Entity.GRAVITY);
 	}
 
 	@Override

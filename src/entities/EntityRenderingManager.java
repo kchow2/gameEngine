@@ -19,6 +19,7 @@ import models.TexturedModel;
 public class EntityRenderingManager {
 	
 	private static List<Entity> entities = new ArrayList<Entity>();
+	private static List<Entity> deadEntities = new ArrayList<Entity>();
 	private static List<Entity>	hiddenEntities = new ArrayList<Entity>();
 	
 	public EntityRenderingManager(){
@@ -51,11 +52,29 @@ public class EntityRenderingManager {
 		hiddenEntities.remove(e);
 	}
 	
-	public void renderAllEntities(MasterRenderer renderer){
+	public void update(){
+		deadEntities.clear();
 		for(Entity e:entities){
+			if(!e.isAlive()){
+				deadEntities.add(e);
+			}
+		}
+		entities.removeAll(deadEntities);
+		hiddenEntities.removeAll(deadEntities);
+	}
+	
+	/*public void renderAllEntities(MasterRenderer renderer){
+		deadEntities.clear();
+		for(Entity e:entities){
+			if(!e.isAlive()){
+				deadEntities.add(e);
+				System.out.println("removing"+e);
+			}
 			renderer.processEntity(e);
 		}
-	}
+		entities.removeAll(deadEntities);
+		hiddenEntities.removeAll(deadEntities);
+	}*/
 	
 	public void cleanUp(){
 		entities.clear();

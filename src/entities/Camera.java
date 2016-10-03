@@ -58,15 +58,18 @@ public class Camera implements KeyboardEventListener{
 			this.position.y = world.getTerrain().getTerrainHeight(position.x, position.z) + cameraHeight;
 			
 		}
-		if(cameraMode == CameraMode.FIRST_PERSON){
-			this.position.x = player.getPosition().x;
-			this.position.y = player.getPosition().y;
-			this.position.z = player.getPosition().z;
+		else if(cameraMode == CameraMode.FIRST_PERSON){
+			Vector3f viewPos = player.getHardpointWorldPos("HP_VIEW");
+			if(viewPos == null)
+				viewPos = player.getPosition();
+			
+			this.position.x = viewPos.x;
+			this.position.y = viewPos.y;
+			this.position.z = viewPos.z;
 			this.pitch = player.rotX;
 			this.yaw = 180.0f - player.rotY;
 		}
-		
-		if(cameraMode == CameraMode.THIRD_PERSON){
+		else if(cameraMode == CameraMode.THIRD_PERSON){
 			calculateZoom();
 			calculatePitch();
 			calculateAngleAroundPlayer();

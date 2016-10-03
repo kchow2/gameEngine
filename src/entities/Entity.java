@@ -12,6 +12,7 @@ import models.TexturedModel;
 import renderEngine.DisplayManager;
 import terrain.Terrain;
 import toolbox.Maths;
+import world.World;
 
 public class Entity {
 
@@ -22,6 +23,8 @@ public class Entity {
 	protected boolean isJumping = false;
 	protected boolean isGravityAffected = true;
 	protected boolean useMovementDamping = true;
+	
+	protected World world;
 	
 	private TexturedModel model;
 	protected Vector3f position;
@@ -37,9 +40,9 @@ public class Entity {
 	private List<IGameComponent> components = new ArrayList<IGameComponent>();
 	private List<Hardpoint> hardpoints = new ArrayList<Hardpoint>();
 	
-	public Entity(TexturedModel model, Vector3f position, float rotX,
+	public Entity(World world, TexturedModel model, Vector3f position, float rotX,
 			float rotY, float rotZ, float scale) {
-		super();
+		this.world = world;
 		this.model = model;
 		this.position = position;
 		this.rotX = rotX;
@@ -166,9 +169,11 @@ public class Entity {
 	}
 	
 	public void setDead(){
-		this.isAlive = false;
-		for(int i = 0; i < this.components.size(); i++){
-			components.get(i).onDestroy(this);
+		if(isAlive){
+			this.isAlive = false;
+			for(int i = 0; i < this.components.size(); i++){
+				components.get(i).onDestroy(this);
+			}
 		}
 	}
 	

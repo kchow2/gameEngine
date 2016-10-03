@@ -20,6 +20,7 @@ import entities.Entity;
 import entities.HoverCraftComponent;
 import entities.Light;
 import entities.Player;
+import entities.WeaponComponent;
 import fontMeshCreator.FontType;
 import fontMeshCreator.GUIText;
 import fontRendering.TextMaster;
@@ -87,12 +88,17 @@ public class MainGameLoop {
 		} else{
 			System.out.println("DAE FILE FAILED!");
 		}
-		for(Hardpoint h:modelData.getHardpoints()){
-			System.out.println(h);
-		}
+		//for(Hardpoint h:modelData.getHardpoints()){
+		//	System.out.println(h);
+		//}
 		
 		Entity entityPlayer = testEntity;//world.createEntity("tank", new Vector3f(100,0,100), true);
 		entityPlayer.addComponent(new HoverCraftComponent(entityPlayer));
+		TexturedModel projectileModel = world.modelCache.loadModel("shell");
+		TexturedModel explosionModel = world.modelCache.loadModel("sphere");
+		try{
+			entityPlayer.addComponent(new WeaponComponent(projectileModel,explosionModel,new ParticleTexture(loader.loadTexture("fire_particle"), 8, false), 0.65f, 100.0f, 1.25f));
+		}catch(IOException e){System.out.println("failed to load particle texture");}
 		
 		world.populateEntities();
 		
@@ -154,11 +160,11 @@ public class MainGameLoop {
 			//	p.getVelocity().y += 10.0f;
 			//}
 			ParticleMaster.update(camera);
-			if(testEntity != null){
-				Vector3f pos = entityPlayer.getHardpointWorldPos("HP_CANNON");
-				if(pos != null)
-					particleSystem.generateParticles(pos);
-			}
+			//if(testEntity != null){
+			//	Vector3f pos = entityPlayer.getHardpointWorldPos("HP_CANNON");
+			//	if(pos != null)
+			//		particleSystem.generateParticles(pos);
+			//}
 			
 			Vector3f mousePoint = mousePicker.getCurrentTerrainPoint();
 			if(mousePoint != null){
