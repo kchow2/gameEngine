@@ -4,11 +4,11 @@ import physics.AABB;
 import physics.CollisionManager;
 import terrain.Terrain;
 
-public class EntityCollisionComponent implements IGameComponent{
+public class CollisionComponent implements IGameComponent{
 	private AABB aabb;
 	private CollisionManager collisionManager;
 	
-	public EntityCollisionComponent(CollisionManager collisionManager, AABB aabb){
+	public CollisionComponent(CollisionManager collisionManager, AABB aabb){
 		this.collisionManager = collisionManager;
 		this.aabb = aabb;
 	}
@@ -16,6 +16,7 @@ public class EntityCollisionComponent implements IGameComponent{
 	@Override
 	public void onCreate(Entity e){
 		collisionManager.addCollisionDetection(e, aabb);
+		e.setCanCollide(true);
 	}
 	
 	@Override
@@ -31,5 +32,6 @@ public class EntityCollisionComponent implements IGameComponent{
 	@Override
 	public void onDestroy(Entity e){
 		collisionManager.removeCollisonDetection(e);
+		e.setCanCollide(false);
 	}
 }

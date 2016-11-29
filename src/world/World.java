@@ -8,6 +8,7 @@ import java.util.Random;
 import org.lwjgl.util.vector.Vector3f;
 
 import entities.Entity;
+import entities.EntityFactory;
 import entities.EntityMovementManager;
 import entities.EntityRenderingManager;
 import entities.Explosion;
@@ -29,10 +30,11 @@ public class World {
 	Terrain terrain;
 	List<Terrain> terrains = new ArrayList<Terrain>();
 	public ModelCache modelCache;
+	public EntityFactory entityFactory;
 	EntityRenderingManager entityManager = new EntityRenderingManager();
 	EntityMovementManager mobileEntityManager = new EntityMovementManager();
 	ProjectileManager projectileManager = new ProjectileManager(entityManager,mobileEntityManager );
-	CollisionManager collisionManager = new CollisionManager();
+	public CollisionManager collisionManager = new CollisionManager();
 	List<Entity> normalMapEntities = new ArrayList<Entity>();
 	
 	List<Explosion> explosionsToAdd = new ArrayList<Explosion>(); 
@@ -42,6 +44,7 @@ public class World {
 		this.terrain = loadTerrain();
 		terrains.add(terrain);
 		this.modelCache = new ModelCache(loader);
+		this.entityFactory = new EntityFactory(this, loader, modelCache);
 	}
 	
 	public Terrain getTerrain(){
@@ -101,7 +104,7 @@ public class World {
 		TexturedModel model = modelCache.loadModel(entityName);
 		AABB aabb = modelCache.getAABB(entityName);
 		//float modelSize = Math.max(aabb.x2-aabb.x1, aabb.z2-aabb.z1);
-		Entity entity = new Entity(this, model, position, 0, 0, 0, 1.0f);
+		Entity entity = new Entity(this, model, position, 0, 0, 0, 1.0f, 1.0f, 1.0f, 1.0f);
 		entityManager.addEntity(entity);
 		if(needsUpdates){
 			mobileEntityManager.addEntity(entity);
@@ -110,6 +113,19 @@ public class World {
 		
 		for( Hardpoint hardpoint:modelCache.getModelData(entityName).getHardpoints()){
 			entity.addHardpoint(hardpoint);
+		}
+		return entity;
+	}
+	
+	public Entity createEntity2(String className, Vector3f position, float rotX, float rotY, float rotZ, float scale){
+		Entity entity = entityFactory.createEntity(className, position, rotX, rotY, rotZ, 1.0f, 1.0f, 1.0f, scale);
+		entityManager.addEntity(entity);
+		if(entity.needsUpdates()){
+			mobileEntityManager.addEntity(entity);
+		}
+		if(entity.canCollide()){
+			AABB aabb = modelCache.getAABB(className);
+			collisionManager.addCollisionDetection(entity, aabb);
 		}
 		return entity;
 	}

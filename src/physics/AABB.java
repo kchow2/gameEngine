@@ -23,12 +23,12 @@ public class AABB {
 	//update the AABB position to move with the entity
 	public void updatePos(Entity sourceEntity){
 		Vector3f pos = sourceEntity.getPosition();
-		this.x1 = pos.x - xSize/2.0f + pos.x;
-		this.x2 = pos.x + xSize/2.0f + pos.x;
-		this.y1 = pos.y + pos.y;
-		this.y2 = pos.y + ySize + pos.y;
-		this.z1 = pos.z - zSize/2.0f + pos.z;
-		this.z2 = pos.z + zSize/2.0f + pos.z;
+		this.x1 = pos.x - xSize/2.0f;
+		this.x2 = pos.x + xSize/2.0f;
+		this.y1 = pos.y;
+		this.y2 = pos.y + ySize;
+		this.z1 = pos.z - zSize/2.0f;
+		this.z2 = pos.z + zSize/2.0f;
 	}
 	
 	public boolean doesCollide(AABB aabb){

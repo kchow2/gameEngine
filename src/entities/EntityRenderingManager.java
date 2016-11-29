@@ -63,19 +63,6 @@ public class EntityRenderingManager {
 		hiddenEntities.removeAll(deadEntities);
 	}
 	
-	/*public void renderAllEntities(MasterRenderer renderer){
-		deadEntities.clear();
-		for(Entity e:entities){
-			if(!e.isAlive()){
-				deadEntities.add(e);
-				System.out.println("removing"+e);
-			}
-			renderer.processEntity(e);
-		}
-		entities.removeAll(deadEntities);
-		hiddenEntities.removeAll(deadEntities);
-	}*/
-	
 	public void cleanUp(){
 		entities.clear();
 	}

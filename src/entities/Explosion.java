@@ -3,6 +3,7 @@ package entities;
 import org.lwjgl.util.vector.Vector3f;
 
 import models.TexturedModel;
+import particles.ParticleSystem;
 import terrain.Terrain;
 import world.World;
 
@@ -13,9 +14,10 @@ public class Explosion extends Entity{
 	private float endRadius = 1.75f;
 	
 	private long explosionStartTime;
+	
 
-	public Explosion(World world, TexturedModel model, Vector3f position, float rotX, float rotY, float rotZ, float scale, float size) {
-		super(world, model, position, rotX, rotY, rotZ, scale);
+	public Explosion(World world, TexturedModel model, Vector3f position, float rotX, float rotY, float rotZ, float xSize, float ySize, float zSize, float scale) {
+		super(world, model, position, rotX, rotY, rotZ, xSize, ySize, zSize, scale);
 		explosionStartTime = System.currentTimeMillis();
 	}
 	

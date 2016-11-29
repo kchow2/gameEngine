@@ -101,6 +101,15 @@ public class Loader {
 		return new RawModel(vaoID, positions.length/dimensions);
 	}
 	
+	//only positions and indices. used for wireframes
+	public RawModel loadToVAO(float[] positions, int[] indices){
+		int vaoID = createVAO();
+		bindIndicesBuffer(indices);
+		storeDataInAttributeList(0, 3, positions);
+		unbindVAO();
+		return new RawModel(vaoID, indices.length);
+	}
+	
 	private int createVAO(){
 		int vaoID = GL30.glGenVertexArrays();
 		vaos.add(vaoID);

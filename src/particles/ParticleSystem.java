@@ -51,6 +51,7 @@ public class ParticleSystem {
 		velocity.normalise();
 		velocity.scale(speed);
 		
+		
 		particles[pointer].setActive(texture, new Vector3f(center), velocity, gravityComplient, lifeLength, 0, particleScale);
 		ParticleMaster.addParticle(particles[pointer++]);
 		if(pointer==MAX_PARTICLES){

@@ -9,6 +9,7 @@ import org.lwjgl.util.vector.Vector4f;
 
 import models.Hardpoint;
 import models.TexturedModel;
+import physics.AABB;
 import renderEngine.DisplayManager;
 import terrain.Terrain;
 import toolbox.Maths;
@@ -32,22 +33,33 @@ public class Entity {
 	protected Vector3f acceleration = new Vector3f(0.0f, 0.0f, 0.0f);
 	protected Vector3f forces = new Vector3f(0.0f,0.0f,0.0f);
 	protected float rotX, rotY, rotZ;
+	protected float xSize, ySize, zSize;
 	protected float scale;
 	protected boolean isAlive;
 	
 	private int textureIndex = 0;
 	
+	String name;
+	String className;
+	private int maxHealth = 100;
+	private int health = 100;
+	private boolean needsUpdates = true;
+	private boolean canCollide = false;
+	
 	private List<IGameComponent> components = new ArrayList<IGameComponent>();
 	private List<Hardpoint> hardpoints = new ArrayList<Hardpoint>();
 	
 	public Entity(World world, TexturedModel model, Vector3f position, float rotX,
-			float rotY, float rotZ, float scale) {
+			float rotY, float rotZ, float xSize, float ySize, float zSize, float scale) {
 		this.world = world;
 		this.model = model;
 		this.position = position;
 		this.rotX = rotX;
 		this.rotY = rotY;
 		this.rotZ = rotZ;
+		this.xSize = xSize;
+		this.ySize = ySize;
+		this.zSize = zSize;
 		this.scale = scale;
 		this.isAlive = true;
 	}
@@ -177,6 +189,60 @@ public class Entity {
 		}
 	}
 	
+	public void setMaxHealth(int val){
+		this.maxHealth = val;
+	}
+	
+	public int getMaxHealth(){
+		return this.maxHealth;
+	}
+	
+	public void setHealth(int val){
+		this.health = val;
+	}
+	
+	public int getHealth(){
+		return this.health;
+	}
+	
+	public void applyDamage(int val){
+		this.health -= val;
+		if(health <= 0){
+			this.setDead();
+		}
+	}
+	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getClassName() {
+		return className;
+	}
+
+	public void setClassName(String className) {
+		this.className = className;
+	}
+	
+	public boolean canCollide() {
+		return canCollide;
+	}
+
+	public void setCanCollide(boolean canCollide) {
+		this.canCollide = canCollide;
+	}
+	public boolean needsUpdates() {
+		return needsUpdates;
+	}
+
+	public void setNeedsUpdates(boolean needsUpdates) {
+		this.needsUpdates = needsUpdates;
+	}
+
 	public Vector3f getLookVec(){
 		Vector4f direction = new Vector4f(0,0,1,0);
 		Matrix4f mat = Maths.createTransformationMatrix(new Vector3f(0,0,0), rotX, rotY, rotZ, 1.0f);
@@ -186,6 +252,10 @@ public class Entity {
 	}
 	
 	protected void onTerrainCollide(Terrain terrain){
+		
+	}
+	
+	public void onEntityCollide(Entity e){
 		
 	}
 	
@@ -261,6 +331,8 @@ public class Entity {
 			this.velocity.z -= zDamp*dt;
 		}
 		
+		if(this.health <= 0)
+			this.setDead();
 		
 	}
 	

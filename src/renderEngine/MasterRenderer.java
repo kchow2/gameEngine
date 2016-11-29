@@ -17,8 +17,10 @@ import entities.Entity;
 import entities.Light;
 import models.TexturedModel;
 import normalMappingRenderer.NormalMappingRenderer;
+import physics.CollisionManager;
 import shaders.StaticShader;
 import shaders.TerrainShader;
+import shaders.WireframeShader;
 import skybox.SkyboxRenderer;
 import terrain.Terrain;
 import toolbox.Maths;
@@ -26,7 +28,7 @@ import toolbox.Maths;
 public class MasterRenderer {
 	
 	private static final float FOV = 70;
-	private static final float NEAR_PLANE = 0.1f;
+	private static final float NEAR_PLANE = 1.0f;		//setting this too low will cause the depth buffer to have insufficient resolution, causing z-fighting, and flickering! See https://www.sjbaker.org/steve/omniv/love_your_z_buffer.html
 	private static final float FAR_PLANE = 1000f;
 	
 	public static final Vector3f SKY_COLOUR = new Vector3f(0.7f, 0.7f, 0.7f);
@@ -40,8 +42,9 @@ public class MasterRenderer {
 	private List<Terrain> terrains = new ArrayList<Terrain>();
 	private TerrainRenderer terrainRenderer;
 	private TerrainShader terrainShader = new TerrainShader();
-	
+	private WireframeShader wireframeShader = new WireframeShader();
 	private SkyboxRenderer skyboxRenderer;
+	private DebugBoundingBoxRenderer debugBoundingBoxRenderer;
 	
 	public MasterRenderer(Loader loader){
 		enableCulling();
@@ -49,7 +52,8 @@ public class MasterRenderer {
 		renderer = new EntityRenderer(shader, projectionMatrix);
 		normalMappingRenderer = new NormalMappingRenderer(projectionMatrix);
 		terrainRenderer = new TerrainRenderer(terrainShader, projectionMatrix);
-		skyboxRenderer = new SkyboxRenderer(loader, projectionMatrix);		
+		skyboxRenderer = new SkyboxRenderer(loader, projectionMatrix);
+		debugBoundingBoxRenderer = new DebugBoundingBoxRenderer(loader, wireframeShader, projectionMatrix);
 	}
 	
 	public static void enableCulling(){
@@ -92,7 +96,14 @@ public class MasterRenderer {
 		renderer.render(entities);
 		shader.stop();
 		
+		//wireframeShader.start();
+		//wireframeShader.loadSkyColour(SKY_COLOUR);
+		//wireframeShader.loadViewMatrix(camera);
+		//debugBoundingBoxRenderer.renderAABBs(entities, normalMapEntities);
+		//wireframeShader.stop();
+		
 		normalMappingRenderer.render(normalMapEntities, clipPlane, lights, camera);
+		
 		
 		//Terrain
 		//GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
@@ -112,6 +123,14 @@ public class MasterRenderer {
 		//GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL );
 		
 		
+	}
+	
+	public void renderDebugInfo(Camera camera, List<CollisionManager.CollisionEntry> collisionObjects){
+		wireframeShader.start();
+		wireframeShader.loadSkyColour(SKY_COLOUR);
+		wireframeShader.loadViewMatrix(camera);
+		debugBoundingBoxRenderer.renderAABBs(collisionObjects);
+		wireframeShader.stop();
 	}
 	
 	public void processTerrain(Terrain terrain){

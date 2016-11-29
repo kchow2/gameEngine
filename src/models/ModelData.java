@@ -26,6 +26,34 @@ public class ModelData {
 		this.furthestPoint = furthestPoint;
 		this.aabb = aabb;
 	}
+	
+	public ModelData(float[] vertices, float[] textureCoords, float[] normals, int[] indices) {
+		this.vertices = vertices;
+		this.textureCoords = textureCoords;
+		this.normals = normals;
+		this.indices = indices;
+		
+		//find the furthest point and calculate AABB
+		float furthestXZ = 0.0f;
+		float furthestY = 0.0f;
+		for(int i=0; i<vertices.length/3; i++){
+			float x = vertices[i];
+			float y = vertices[i+1];
+			float z = vertices[i+2];
+			float xz = (float) Math.sqrt(x*x+z*z);
+			float d = (float) Math.sqrt(x*x+y*y+z*z);
+			if(xz > furthestXZ){
+				furthestXZ = xz;
+			}
+			if(y > furthestY){
+				furthestY = y;
+			}
+			if(d > this.furthestPoint){
+				this.furthestPoint = d;
+			}
+		}
+		this.aabb = new AABB(furthestXZ, furthestY, furthestXZ);
+	}
 
 	public float[] getVertices() {
 		return vertices;

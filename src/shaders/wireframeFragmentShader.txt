@@ -1,0 +1,13 @@
+#version 400 core
+
+in float visibility;
+ 
+out vec4 out_Color;
+uniform vec3 skyColour;
+
+const vec4 outputColor = vec4(1.0, 0.0, 0.0, 1.0);
+
+
+void main(void){
+    out_Color = mix(vec4(skyColour, 1.0), outputColor, visibility);
+}

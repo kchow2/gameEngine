@@ -4,6 +4,7 @@ import org.lwjgl.Sys;
 import org.lwjgl.util.vector.Vector3f;
 
 import models.TexturedModel;
+import physics.AABB;
 import terrain.Terrain;
 import world.World;
 
@@ -13,7 +14,7 @@ public class Projectile extends Entity{
 	private TexturedModel explosionModel;
 	
 	public Projectile(World world, TexturedModel model, TexturedModel explosionModel, Vector3f position, float rotX, float rotY, float rotZ, float scale, float shotSpeed, float lifetime) {
-		super(world, model, position, rotX, rotY, rotZ, scale);
+		super(world, model, position, rotX, rotY, rotZ, 1.0f, 1.0f, 1.0f, scale);
 		this.explosionModel = explosionModel;
 		this.lifetime_ms = (int)(lifetime*1000);
 		this.startTime = getCurrentTime();
@@ -21,6 +22,7 @@ public class Projectile extends Entity{
 		isAlive = true;
 		isGravityAffected = false;
 		useMovementDamping = false;
+		this.addComponent(new CollisionComponent(world.collisionManager, new AABB(0.5f,0.5f,0.5f)));
 	}
 	
 	@Override
@@ -39,9 +41,16 @@ public class Projectile extends Entity{
 		this.spawnExplosion(this.getPosition());
 	}
 	
+	@Override
+	public void onEntityCollide(Entity e){
+		this.setDead();
+		this.spawnExplosion(this.getPosition());
+		System.out.println("Entity hit!"+e);
+	}
+	
 	private void spawnExplosion(Vector3f position){
 		assert(explosionModel != null);
-		Explosion e = new Explosion(world, explosionModel, position, rotX, rotY, rotZ, 1.0f, 1.0f);
+		Explosion e = new Explosion(world, explosionModel, position, rotX, rotY, rotZ, 1.0f, 1.0f, 1.0f, 1.0f);
 		world.spawnExplosion(e);
 	}
 	

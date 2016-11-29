@@ -35,7 +35,7 @@ public class WeaponComponent implements IGameComponent {
 		long t = System.currentTimeMillis();
 		if(movement.fire && (t > lastFireTime + shotDelay_ms)){
 			Projectile projectile = new Projectile(entity.world, projectileModel, explosionModel, this.entity.getHardpointWorldPos("HP_CANNON"), this.entity.getRotX(),this.entity.getRotY(),this.entity.getRotZ(),1.0f, shotSpeed, lifetime);
-			projectile.addComponent(new ParticleComponent(particleTexture));
+			projectile.addComponent(new ParticleComponent(new ParticleSystemParams(particleTexture, 100, 2.0f)));
 			ProjectileManager.get().addEntity(projectile);
 			lastFireTime = t;
 		}

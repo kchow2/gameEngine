@@ -23,6 +23,10 @@ public class CollisionManager {
 		}
 	}
 	
+	public ArrayList<CollisionEntry> getCollisionObjects(){
+		return this.collisionObjects;
+	}
+	
 	public int getObjectCount(){
 		return collisionObjects.size();
 	}
@@ -34,7 +38,7 @@ public class CollisionManager {
 		}
 		
 		//check collisions naively is an O(N^2) operation
-		//TODO: spacial partitioning to reduce number of collision checks
+		//TODO: spatial partitioning to reduce number of collision checks
 		for(int i = 0; i < collisionObjects.size(); i++){
 			for(int j = i+1; j < collisionObjects.size(); j++){
 				AABB aabb1 = collisionObjects.get(i).aabb;
@@ -49,7 +53,12 @@ public class CollisionManager {
 				float dist = (float)Math.sqrt(dx*dx+dy*dy+dz*dz);
 				//System.out.println("dist="+dist);
 				if(aabb1.doesCollide(aabb2)){
-					resolveCollision(collisionObjects.get(i), collisionObjects.get(j));
+					entity1.onEntityCollide(entity2);
+					entity2.onEntityCollide(entity1);
+					
+					//if one of the entities was a projectile, it will be dead at this point, so we don't need to apply physics
+					if(entity1.isAlive() && entity2.isAlive())
+						resolveCollision(collisionObjects.get(i), collisionObjects.get(j));
 				}
 			}
 		}
@@ -88,7 +97,7 @@ public class CollisionManager {
 			
 			v1.x = -collisionDirection.x*v1Final;
 			v1.y = -collisionDirection.y*v1Final;
-			v1.x = -collisionDirection.z*v1Final;
+			v1.z = -collisionDirection.z*v1Final;
 			
 			v2.x = collisionDirection.x*v2Final;
 			v2.y = collisionDirection.y*v2Final;
