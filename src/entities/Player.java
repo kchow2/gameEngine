@@ -2,18 +2,25 @@ package entities;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+
 import toolbox.KeyboardEventListener;
 import toolbox.KeyboardHelper;
 import toolbox.MouseHelper;
+import world.World;
 
 public class Player implements KeyboardEventListener{
 	private EntityMovement movement = new EntityMovement();
 	
+	private World world;
+	private Camera camera;
 	private Entity entity;
 	private Entity targetedEntity = null;
+	private boolean controlsEnabled = true;
 
-	public Player(Entity entity) {
+	public Player(World world, Entity entity, Camera camera) {
+		this.world = world;
 		this.entity = entity;
+		this.camera = camera;
 		KeyboardHelper.addListener(this);
 	}
 	
@@ -25,10 +32,22 @@ public class Player implements KeyboardEventListener{
 		this.entity = entity;
 	}
 	
+	public void disableControls(){
+		this.controlsEnabled = false;
+	}
+	
+	public void enableControls(){
+		this.controlsEnabled = true;
+	}
+	
 	
 	public void checkInputs(){
 		
 		movement.clearInputs();
+
+		if(!controlsEnabled){
+			return;
+		}
 		
 		//FORWARD
 		if(Keyboard.isKeyDown(Keyboard.KEY_W)){
@@ -130,5 +149,7 @@ public class Player implements KeyboardEventListener{
 			MouseHelper.grabMouse();
 		else if(state && keyCode == Keyboard.KEY_ESCAPE)
 			MouseHelper.releaseMouse();
+		else if(state && keyCode == Keyboard.KEY_W && Keyboard.isKeyDown(Keyboard.KEY_LCONTROL))
+			world.toggleWorldEditor(camera, this);
 	}
 }

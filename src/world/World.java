@@ -7,25 +7,31 @@ import java.util.Random;
 
 import org.lwjgl.util.vector.Vector3f;
 
+import entities.Camera;
 import entities.Entity;
 import entities.EntityFactory;
 import entities.EntityMovementManager;
 import entities.EntityRenderingManager;
 import entities.Explosion;
+import entities.Player;
 import entities.ProjectileManager;
+import guis.GuiMaster;
 import models.Hardpoint;
 import models.TexturedModel;
 import physics.AABB;
 import physics.CollisionManager;
 import renderEngine.Loader;
+import renderEngine.MasterRenderer;
 import renderEngine.ModelCache;
 import terrain.Terrain;
 import textures.ModelTexture;
 import textures.TerrainTexture;
 import textures.TerrainTexturePack;
+import worldeditor.WorldEditor;
 
 public class World {
-	//Terrain terrain;
+	private final float GRAVITY = 20.0f;
+	
 	Loader loader;
 	Terrain terrain;
 	List<Terrain> terrains = new ArrayList<Terrain>();
@@ -39,12 +45,17 @@ public class World {
 	
 	List<Explosion> explosionsToAdd = new ArrayList<Explosion>(); 
 	
-	public World(Loader loader){
+	private MasterRenderer masterRenderer;
+	WorldEditor worldEditor;
+	private boolean isWorldEditorOpen = false;
+	
+	public World(Loader loader, MasterRenderer masterRenderer){
 		this.loader = loader;
 		this.terrain = loadTerrain();
 		terrains.add(terrain);
 		this.modelCache = new ModelCache(loader);
 		this.entityFactory = new EntityFactory(this, loader, modelCache);
+		this.masterRenderer = masterRenderer;
 	}
 	
 	public Terrain getTerrain(){
@@ -69,6 +80,10 @@ public class World {
 		}
 	}
 	
+	public float getGravity(){
+		return GRAVITY;
+	}
+	
 	public void cleanUp(){
 		entityManager.cleanUp();
 		mobileEntityManager.cleanUp();
@@ -83,8 +98,14 @@ public class World {
 		projectileManager.update(terrain);
 		collisionManager.checkCollisions();
 		
+		//terrain.testDynamicTerrainUpdate(DisplayManager.getFrameTimeSeconds());
+		
 		for(Explosion e:explosionsToAdd){
 			addExplosion(e);
+		}
+		
+		if(this.worldEditor != null && this.worldEditor.isEditorOpen()){
+			this.worldEditor.update();
 		}
 	}
 	
@@ -102,7 +123,7 @@ public class World {
 	
 	public Entity createEntity(String entityName, Vector3f position, boolean needsUpdates){
 		TexturedModel model = modelCache.loadModel(entityName);
-		AABB aabb = modelCache.getAABB(entityName);
+		AABB aabb = new AABB(modelCache.getAABB(entityName));
 		//float modelSize = Math.max(aabb.x2-aabb.x1, aabb.z2-aabb.z1);
 		Entity entity = new Entity(this, model, position, 0, 0, 0, 1.0f, 1.0f, 1.0f, 1.0f);
 		entityManager.addEntity(entity);
@@ -118,13 +139,13 @@ public class World {
 	}
 	
 	public Entity createEntity2(String className, Vector3f position, float rotX, float rotY, float rotZ, float scale){
-		Entity entity = entityFactory.createEntity(className, position, rotX, rotY, rotZ, 1.0f, 1.0f, 1.0f, scale);
+		Entity entity = entityFactory.createEntityFromIni(className, position, rotX, rotY, rotZ, scale);
 		entityManager.addEntity(entity);
 		if(entity.needsUpdates()){
 			mobileEntityManager.addEntity(entity);
 		}
 		if(entity.canCollide()){
-			AABB aabb = modelCache.getAABB(className);
+			AABB aabb = new AABB(modelCache.getAABB(className));
 			collisionManager.addCollisionDetection(entity, aabb);
 		}
 		return entity;
@@ -206,6 +227,31 @@ public class World {
 	private void addExplosion(Explosion e){
 		entityManager.addEntity(e);
 		mobileEntityManager.addEntity(e);
+	}
+	
+	
+	public void toggleWorldEditor(Camera camera, Player player){
+		if(!this.isWorldEditorOpen){
+			if(this.worldEditor == null){
+				this.worldEditor = new WorldEditor(this, camera, player, masterRenderer);
+			}
+			this.openWorldEditor(camera, player);
+		}
+		else{
+			this.closeWorldEditor();
+		}
+	}
+	
+	private void openWorldEditor(Camera camera, Player player){
+		GuiMaster.showWorldEditorGui(this.worldEditor, this.masterRenderer, this.loader, camera, player);
+		this.worldEditor.beginEditing();
+		this.isWorldEditorOpen = true;
+	}
+	
+	private void closeWorldEditor(){
+		GuiMaster.hideWorldEditorGui();
+		this.worldEditor.endEditing();
+		this.isWorldEditorOpen = false;
 	}
 	
 }

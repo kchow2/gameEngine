@@ -67,7 +67,7 @@ public class Maths {
 		return res;
 	}
 	
-	//Gets the 3D distance between two points
+	/** Gets the 3D distance between two points */
 	public static float getDistance(Vector3f v1, Vector3f v2){
 		float x = v2.x - v1.x;
 		float y = v2.y - v1.y;
@@ -75,7 +75,7 @@ public class Maths {
 		return (float) Math.sqrt(x*x + y*y + z*z);
 	}
 	
-	//Gets the 3D distance between two points
+	/** Gets the 3D distance squared between two points */
 	public static float getDistanceSq(Vector3f v1, Vector3f v2){
 		float x = v2.x - v1.x;
 		float y = v2.y - v1.y;
@@ -83,8 +83,18 @@ public class Maths {
 		return x*x + y*y + z*z;
 	}
 	
-	//Linear interpolation between 2 values, with blend factor of alpha
+	/** Linear interpolation between 2 values, with blend factor of alpha */
 	public static float lerp(float f1, float f2, float alpha){
 		return f1*alpha + (1.0f-alpha)*f2;
+	}
+	
+	/** Clamps the input to the range of [min,max] */
+	public static float clamp(float val, float min, float max){
+		return Math.min(Math.max(val, min), max);
+	}
+	
+	/** Clamps the input to the range of [min,max] */
+	public static int clamp(int val, int min, int max){
+		return Math.min(Math.max(val, min), max);
 	}
 }

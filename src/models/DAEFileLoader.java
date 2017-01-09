@@ -35,7 +35,7 @@ public class DAEFileLoader {
 		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
 		}
-		
+		System.out.println("furhtest:"+handler.getModel().getFurthestPoint());
 		return handler.getModel();
 	}
 
@@ -346,7 +346,8 @@ public class DAEFileLoader {
 			
 			int[] indicesArray = convertIndicesListToArray(indices);
 			
-			AABB aabb = new AABB(furthest,furthest,furthest);
+			AABB aabb = new AABB(furthest*2,furthest*2,furthest*2);
+			System.out.println(aabb);
 			ModelData modelData = new ModelData(verticesArray, uvArray, normalsArray, indicesArray,
 					furthest, aabb);
 			

@@ -18,6 +18,7 @@ import toolbox.Maths;
 public class TerrainRenderer {
 	
 	private TerrainShader shader;
+	private boolean wireframeMode = false;
 	
 	TerrainRenderer(TerrainShader shader, Matrix4f projectionMatrix){
 		this.shader = shader;
@@ -28,11 +29,17 @@ public class TerrainRenderer {
 	}
 	
 	public void render(List<Terrain> terrains){
+		if(wireframeMode){
+			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
+		}
 		for(Terrain terrain:terrains){
 			prepareTerrain(terrain);
 			loadModelMatrix(terrain);
 			GL11.glDrawElements(GL11.GL_TRIANGLES, terrain.getModel().getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
 			unbindTexturedModel();
+		}
+		if(wireframeMode){
+			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
 		}
 	}
 	
@@ -72,5 +79,13 @@ public class TerrainRenderer {
 		Matrix4f transformationMatrix = Maths.createTransformationMatrix(
 				new Vector3f(terrain.getX(), 0, terrain.getZ()),0,0,0,1.0f);
 		shader.loadTransformationMatrix(transformationMatrix);
+	}
+	
+	public void setWireframeMode(boolean wireframeMode){
+		this.wireframeMode = wireframeMode;
+	}
+	
+	public void toggleWireframeMode(){
+		this.wireframeMode = !wireframeMode;
 	}
 }

@@ -54,7 +54,7 @@ public class HoverCraftComponent implements IGameComponent{
 		//hover physics
 		float dt = DisplayManager.getFrameTimeSeconds();
 		float h = this.entity.getPosition().y - terrain.getTerrainHeight(this.entity.getPosition().x, this.entity.getPosition().z) - HOVER_HEIGHT;
-		float f = Math.max(0.0f, -55.0f*h + Entity.GRAVITY) - 2.5f*entity.getVelocity().y;
+		float f = Math.max(0.0f, -55.0f*h + e.world.getGravity()) - 2.5f*entity.getVelocity().y;
 		this.entity.addForce(0, f, 0);
 		
 		float prevPitch = this.entity.rotX;
@@ -79,7 +79,7 @@ public class HoverCraftComponent implements IGameComponent{
 		engineStrafePower = movement.strafe * MAX_STRAFE_SPEED;
 		engineTurnPower = movement.turn;
 		enginePitchPower = movement.pitchUp;
-		engineJumpPower = movement.jump * (40.0f+Entity.GRAVITY);
+		engineJumpPower = movement.jump * (40.0f+entity.world.getGravity());
 	}
 
 	@Override

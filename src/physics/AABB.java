@@ -20,6 +20,10 @@ public class AABB {
 		this.z2 = zSize/2.0f;
 	}
 	
+	public AABB(AABB aabb) {
+		this(aabb.xSize, aabb.ySize, aabb.zSize);
+	}
+
 	//update the AABB position to move with the entity
 	public void updatePos(Entity sourceEntity){
 		Vector3f pos = sourceEntity.getPosition();

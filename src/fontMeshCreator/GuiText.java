@@ -3,7 +3,7 @@ package fontMeshCreator;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
-import fontRendering.TextMaster;
+import renderEngine.Loader;
 
 /**
  * Represents a piece of text in the game.
@@ -11,7 +11,7 @@ import fontRendering.TextMaster;
  * @author Karl
  *
  */
-public class GUIText {
+public class GuiText {
 
 	private String textString;
 	private float fontSize;
@@ -27,6 +27,9 @@ public class GUIText {
 	private FontType font;
 
 	private boolean centerText = false;
+	
+	private float renderWidth;
+	private float renderHeight;
 
 	/**
 	 * Creates a new text, loads the text's quads into a VAO, and adds the text
@@ -53,7 +56,7 @@ public class GUIText {
 	 * @param centered
 	 *            - whether the text should be centered or not.
 	 */
-	public GUIText(String text, float fontSize, FontType font, Vector2f position, float maxLineLength,
+	public GuiText(Loader loader, String text, float fontSize, FontType font, Vector2f position, float maxLineLength,
 			boolean centered) {
 		this.textString = text;
 		this.fontSize = fontSize;
@@ -62,15 +65,19 @@ public class GUIText {
 		this.lineMaxSize = maxLineLength;
 		this.centerText = centered;
 
-		TextMaster.loadText(this);
+		TextMeshData data = font.loadText(this);
+		int vao = loader.loadToVAO(data.getVertexPositions(), data.getTextureCoords());
+		this.setMeshInfo(vao, data.getVertexCount());
+		this.renderWidth = data.getWidth();
+		this.renderHeight = data.getHeight();
 	}
 
 	/**
 	 * Remove the text from the screen.
 	 */
-	public void remove() {
-		TextMaster.removeText(this);
-	}
+	//public void remove() {
+	//	TextMaster.removeText(this);
+	//}
 
 	/**
 	 * @return The font used by this text.
@@ -116,6 +123,10 @@ public class GUIText {
 	 */
 	public Vector2f getPosition() {
 		return position;
+	}
+	
+	public void setPosition(Vector2f position){
+		this.position = position;
 	}
 
 	/**
@@ -174,7 +185,7 @@ public class GUIText {
 	/**
 	 * @return The maximum length of a line of this text.
 	 */
-	protected float getMaxLineSize() {
+	public float getMaxLineSize() {
 		return lineMaxSize;
 	}
 
@@ -183,6 +194,14 @@ public class GUIText {
 	 */
 	protected String getTextString() {
 		return textString;
+	}
+	
+	public float getRenderWidth() {
+		return renderWidth;
+	}
+	
+	public float getRenderHeight() {
+		return renderHeight;
 	}
 
 }

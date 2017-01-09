@@ -19,15 +19,17 @@ public class Camera implements KeyboardEventListener{
 	
 	private static final float OVERHEAD_CAMERA_MOVE_SPEED = 45.0f;
 	private static final float DEFAULT_OVERHEAD_CAMERA_DISTANCE = 65.0f;	//the default height of the camera above the terrain
-	
-	private float distanceFromPlayer = 50.0f;
-	private float angleAroundPlayer = 0.0f;
+
+	//third person camera settings
+	private float thirdPersonDistance = 50.0f;
+	private float thirdPersonYaw = 0.0f;
+	private float thirdPersonPitch = 30.0f;
 	
 	//overhead camera settings
 	private float overheadCameraHeight = DEFAULT_OVERHEAD_CAMERA_DISTANCE;
 	private Vector3f overheadCameraTarget = new Vector3f();
 	
-	
+	//these fields are calculated depending on camera mode and player pos
 	private Vector3f position = new Vector3f(0,0,0);
 	private float pitch, yaw;
 	
@@ -44,11 +46,7 @@ public class Camera implements KeyboardEventListener{
 		if(cameraMode == CameraMode.OVERHEAD){
 			updateOverheadCameraPos(world.getTerrain());
 			calculateZoom();
-			//this.yaw = 0;
-			//this.pitch = 70;
-			
-			//getClass().this.position.y = world.getTerrain().getTerrainHeight(position.x, position.z) + overheadCameraHeight;
-			
+
 			calculateCameraPosition(overheadCameraTarget, overheadCameraHeight, 0, 70, 0);
 		}
 		else if(cameraMode == CameraMode.FIRST_PERSON){
@@ -63,14 +61,15 @@ public class Camera implements KeyboardEventListener{
 			this.yaw = 180.0f - player.rotY;
 		}
 		else if(cameraMode == CameraMode.THIRD_PERSON){
+			updateThirdPersonCameraPos(world.getTerrain());
 			calculateZoom();
-			calculatePitch();
-			calculateAngleAroundPlayer();
 			
-			float horizontalDistance = calculateHorizontalDistance();
-			float verticalDistance = calculateVerticalDistance();
-			calculateCameraPosition(horizontalDistance, verticalDistance);
+			calculateCameraPosition(player.getPosition(), thirdPersonDistance, player.getRotY() + thirdPersonYaw, thirdPersonPitch, 1.75f);
 		}
+	}
+	
+	public CameraMode getCameraMode(){
+		return this.cameraMode;
 	}
 	
 	public void setCameraMode(CameraMode mode){
@@ -82,10 +81,9 @@ public class Camera implements KeyboardEventListener{
 			world.showEntity(player);
 		
 		if(mode == CameraMode.OVERHEAD){
-			this.overheadCameraTarget.x = this.position.x;
-			this.overheadCameraTarget.y = this.position.y;
-			this.overheadCameraTarget.z = this.position.z;
-			//this.position.z += overheadCameraHeight*Math.atan(Math.toRadians(90.0f-pitch))/4;	//kind of center the player in the lower center of the screen
+			this.overheadCameraTarget.x = player.getPosition().x;
+			this.overheadCameraTarget.y = player.getPosition().y;
+			this.overheadCameraTarget.z = player.getPosition().z;
 		}
 	}
 	
@@ -100,24 +98,6 @@ public class Camera implements KeyboardEventListener{
 
 	public Vector3f getPosition() {
 		return position;
-	}
-	
-	private float calculateHorizontalDistance(){
-		return (float)(distanceFromPlayer * Math.cos(Math.toRadians(pitch)));
-	}
-	private float calculateVerticalDistance(){
-		return (float)(distanceFromPlayer * Math.sin(Math.toRadians(pitch)));
-	}
-	private void calculateCameraPosition(float horizontalDistance, float verticalDistance){
-		
-		float theta = player.getRotY() + angleAroundPlayer;
-		float offsetX = (float)(horizontalDistance * Math.sin(Math.toRadians(theta)));
-		float offsetZ = (float)(horizontalDistance * Math.cos(Math.toRadians(theta)));
-		position.x = player.getPosition().x - offsetX;
-		position.z = player.getPosition().z - offsetZ;
-		position.y = player.getPosition().y + 1 + verticalDistance;
-		
-		yaw = 180.0f - theta;
 	}
 	
 	private void calculateCameraPosition(Vector3f cameraTarget, float distance, float theta, float pitch, float vOffset){
@@ -137,47 +117,24 @@ public class Camera implements KeyboardEventListener{
 	private void calculateZoom(){
 		float zoomLevel = Mouse.getDWheel() * 0.1f;
 		if(cameraMode == CameraMode.THIRD_PERSON)
-			distanceFromPlayer -= zoomLevel;
+			thirdPersonDistance -= zoomLevel;
 		else if(cameraMode == CameraMode.OVERHEAD)
 			overheadCameraHeight -= zoomLevel;
 	}
-	
-	private void calculatePitch(){
-		if(Mouse.isButtonDown(2)){	//R_BUTTON
-			float pitchChange = MouseHelper.getDY() * 0.1f;
-			pitch -= pitchChange;
-		}
-	}
-	
-	private void calculateAngleAroundPlayer(){
-		if(Mouse.isButtonDown(2)){	//R_BUTTON
-			float angleChange = MouseHelper.getDX() * 0.3f;
-			angleAroundPlayer -= angleChange;
-		}
-	}
 
-	public float getDistanceFromPlayer() {
-		return distanceFromPlayer;
+	public void setThirdPersonYaw(float angle){
+		this.thirdPersonYaw = angle;
 	}
-
-	public void setDistanceFromPlayer(float distanceFromPlayer) {
-		this.distanceFromPlayer = distanceFromPlayer;
+	public void setThirdPersonPitch(float angle){
+		this.thirdPersonPitch = angle;
 	}
-
-	public float getAngleAroundPlayer() {
-		return angleAroundPlayer;
-	}
-
-	public void setAngleAroundPlayer(float angleAroundPlayer) {
-		this.angleAroundPlayer = angleAroundPlayer;
+	public void setThirdPersonDistance(float d){
+		this.thirdPersonDistance = d;
 	}
 	
+	//used for rendering reflections
 	public void invertPitch(){
-		pitch = -pitch;
-	}
-
-	public void setPitch(float pitch) {
-		this.pitch = pitch;
+		this.pitch = -pitch;
 	}
 
 	public float getPitch() {
@@ -186,6 +143,17 @@ public class Camera implements KeyboardEventListener{
 
 	public float getYaw() {
 		return yaw;
+	}
+	
+	private void updateThirdPersonCameraPos(Terrain terrain){
+		if(Mouse.isButtonDown(2)){	//MIDDLE MOUSE BUTTON
+			float pitchChange = MouseHelper.getDY() * 0.1f;
+			thirdPersonPitch -= pitchChange;
+		}
+		if(Mouse.isButtonDown(2)){	//MIDDLE MOUSE BUTTON
+			float angleChange = MouseHelper.getDX() * 0.3f;
+			thirdPersonYaw -= angleChange;
+		}
 	}
 	
 	private void updateOverheadCameraPos(Terrain terrain){

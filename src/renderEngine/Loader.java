@@ -35,13 +35,15 @@ public class Loader {
 	
 	
 	public RawModel loadToVAO(float[] positions, float[] textureCoords, float[] normals, int[] indices){
+		
 		int vaoID = createVAO();
+		RawModel model = new RawModel(vaoID, indices.length);;
 		bindIndicesBuffer(indices);
-		storeDataInAttributeList(0, 3, positions);
-		storeDataInAttributeList(1, 2, textureCoords);
-		storeDataInAttributeList(2, 3, normals);
+		storeDataInAttributeList(model, 0, 3, positions);
+		storeDataInAttributeList(model, 1, 2, textureCoords);
+		storeDataInAttributeList(model, 2, 3, normals);
 		unbindVAO();
-		return new RawModel(vaoID, indices.length);
+		return model;
 	}
 	
 	public int createEmptyVbo(int floatCount){
@@ -75,20 +77,20 @@ public class Loader {
 	//normal mapping with tangents
 	public RawModel loadToVAO(float[] positions, float[] textureCoords, float[] normals, float[] tangents, int[] indices){
 		int vaoID = createVAO();
+		RawModel model = new RawModel(vaoID, indices.length);;
 		bindIndicesBuffer(indices);
-		storeDataInAttributeList(0, 3, positions);
-		storeDataInAttributeList(1, 2, textureCoords);
-		storeDataInAttributeList(2, 3, normals);
-		storeDataInAttributeList(3, 3, tangents);
+		storeDataInAttributeList(model, 0, 3, positions);
+		storeDataInAttributeList(model, 1, 2, textureCoords);
+		storeDataInAttributeList(model, 2, 3, normals);
+		storeDataInAttributeList(model, 3, 3, tangents);
 		unbindVAO();
-		return new RawModel(vaoID, indices.length);
+		return model;
 	}
 	
-	//normal mapping with tangents
 	public int loadToVAO(float[] positions, float[] textureCoords){
 		int vaoID = createVAO();
-		storeDataInAttributeList(0, 2, positions);
-		storeDataInAttributeList(1, 2, textureCoords);
+		storeDataInAttributeList(null, 0, 2, positions);
+		storeDataInAttributeList(null, 1, 2, textureCoords);
 		unbindVAO();
 		return vaoID;
 	}
@@ -96,18 +98,20 @@ public class Loader {
 	//for 2d guis
 	public RawModel loadToVAO(float[] positions, int dimensions){
 		int vaoID = createVAO();
-		this.storeDataInAttributeList(0, dimensions, positions);
+		RawModel model = new RawModel(vaoID, positions.length/dimensions);
+		this.storeDataInAttributeList(model, 0, dimensions, positions);
 		unbindVAO();
-		return new RawModel(vaoID, positions.length/dimensions);
+		return model;
 	}
 	
 	//only positions and indices. used for wireframes
 	public RawModel loadToVAO(float[] positions, int[] indices){
 		int vaoID = createVAO();
+		RawModel model = new RawModel(vaoID, indices.length);;
 		bindIndicesBuffer(indices);
-		storeDataInAttributeList(0, 3, positions);
+		storeDataInAttributeList(model, 0, 3, positions);
 		unbindVAO();
-		return new RawModel(vaoID, indices.length);
+		return model;
 	}
 	
 	private int createVAO(){
@@ -190,7 +194,7 @@ public class Loader {
 		}
 	}
 	
-	private void storeDataInAttributeList(int attributeNumber, int coordinateSize, float[] data){
+	private int storeDataInAttributeList(RawModel model, int attributeNumber, int coordinateSize, float[] data){
 		int vboID = GL15.glGenBuffers();
 		vbos.add(vboID);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboID);
@@ -198,18 +202,25 @@ public class Loader {
 		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, GL15.GL_STATIC_DRAW);
 		GL20.glVertexAttribPointer(attributeNumber, coordinateSize, GL11.GL_FLOAT, false, 0, 0);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+		
+		if(model != null){
+			model.setVboID(attributeNumber, vboID);
+		}
+		
+		return vboID;
 	}
 	
 	private void unbindVAO(){
 		GL30.glBindVertexArray(0);
 	}
 	
-	private void bindIndicesBuffer(int[] indices){
+	private int bindIndicesBuffer(int[] indices){
 		int vboID = GL15.glGenBuffers();
 		vbos.add(vboID);
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, vboID);
 		IntBuffer buffer = storeDataInIntBuffer(indices);
 		GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, buffer, GL15.GL_STATIC_DRAW);
+		return vboID;
 	}
 	
 	private IntBuffer storeDataInIntBuffer(int[] data){

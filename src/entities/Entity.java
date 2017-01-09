@@ -16,17 +16,19 @@ import toolbox.Maths;
 import world.World;
 
 public class Entity {
-
-	public static float GRAVITY = 20.0f;
 	public static float BOUNCE_DAMPING = 0.6f;
 	public static float BOUNCE_CUTOFF_THRESHOLD = 0.05f;
+	
+	protected World world;
 	
 	protected boolean isJumping = false;
 	protected boolean isGravityAffected = true;
 	protected boolean useMovementDamping = true;
+	protected boolean canCollide = false;
+	protected boolean needsUpdates = true;
 	
-	protected World world;
-	
+	protected AABB aabb;
+
 	private TexturedModel model;
 	protected Vector3f position;
 	protected Vector3f velocity = new Vector3f(0f,0.0f,0f);
@@ -39,12 +41,10 @@ public class Entity {
 	
 	private int textureIndex = 0;
 	
-	String name;
+	String displayName;
 	String className;
-	private int maxHealth = 100;
-	private int health = 100;
-	private boolean needsUpdates = true;
-	private boolean canCollide = false;
+	protected int maxHealth = 100;
+	protected int health = 100;
 	
 	private List<IGameComponent> components = new ArrayList<IGameComponent>();
 	private List<Hardpoint> hardpoints = new ArrayList<Hardpoint>();
@@ -62,6 +62,8 @@ public class Entity {
 		this.zSize = zSize;
 		this.scale = scale;
 		this.isAlive = true;
+		
+		this.aabb = new AABB(xSize, ySize, zSize);
 	}
 	
 	public void addComponent(IGameComponent component){
@@ -186,6 +188,7 @@ public class Entity {
 			for(int i = 0; i < this.components.size(); i++){
 				components.get(i).onDestroy(this);
 			}
+			world.collisionManager.removeCollisonDetection(this);
 		}
 	}
 	
@@ -212,12 +215,12 @@ public class Entity {
 		}
 	}
 	
-	public String getName() {
-		return name;
+	public String getDisplayName() {
+		return displayName;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setDisplayName(String name) {
+		this.displayName = name;
 	}
 
 	public String getClassName() {
@@ -233,7 +236,15 @@ public class Entity {
 	}
 
 	public void setCanCollide(boolean canCollide) {
-		this.canCollide = canCollide;
+		if(this.canCollide ^ canCollide){
+			if(canCollide){
+				this.canCollide = canCollide;
+				world.collisionManager.addCollisionDetection(this, aabb);
+			}
+			else{
+				world.collisionManager.removeCollisonDetection(this);
+			}
+		}
 	}
 	public boolean needsUpdates() {
 		return needsUpdates;
@@ -251,12 +262,12 @@ public class Entity {
 		return new Vector3f(direction);
 	}
 	
-	protected void onTerrainCollide(Terrain terrain){
-		
+	protected boolean onTerrainCollide(Terrain terrain){
+		return true;
 	}
 	
-	public void onEntityCollide(Entity e){
-		
+	public boolean onEntityCollide(Entity e){
+		return true;
 	}
 	
 	public void addHardpoint(Hardpoint hardpoint){
@@ -289,7 +300,7 @@ public class Entity {
 		float terrainHeight = terrain.getTerrainHeight(pos.x, pos.z);
 		
 		float dt = DisplayManager.getFrameTimeSeconds();
-		float grav = isGravityAffected ? GRAVITY : 0;
+		float grav = isGravityAffected ? world.getGravity() : 0;
 		
 		//zero out the forces every frame. Each component is responsible for recalculating forces every tick.
 		this.forces.set(0.0f,0.0f,0.0f);
@@ -333,7 +344,6 @@ public class Entity {
 		
 		if(this.health <= 0)
 			this.setDead();
-		
 	}
 	
 	public void processMovementInput(EntityMovement movement){

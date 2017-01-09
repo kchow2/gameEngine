@@ -3,18 +3,23 @@ package terrain;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 import javax.imageio.ImageIO;
 
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL15;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
+import models.RawModel;
 import renderEngine.Loader;
-import textures.ModelTexture;
 import textures.TerrainTexture;
 import textures.TerrainTexturePack;
 import toolbox.Maths;
-import models.RawModel;
 
 public class Terrain {
 	private static final float SIZE = 800;
@@ -86,6 +91,12 @@ public class Terrain {
 			Vector2f pos = new Vector2f(xCoord, zCoord);
 			return Maths.barycentricInterpolate(p1, p2, p3, pos);
 		}
+	}
+	
+	public float getTerrainGridHeight(int gridX, int gridZ){
+		gridX = Maths.clamp(gridX, 0, heights.length - 1);
+		gridZ = Maths.clamp(gridZ, 0, heights.length - 1);
+		return heights[gridX][gridZ];
 	}
 	
 	public Vector3f getTerrainNormal(float worldX, float worldZ){
@@ -175,6 +186,78 @@ public class Terrain {
 		height /= MAX_PIXEL_COLOUR/2f;
 		height *= MAX_HEIGHT;
 		return height;
+	}
+	
+	public int worldToGridX(float worldX){
+		float terrainX = worldX - this.x;
+		float gridSquareSize = SIZE / (float) (heights.length - 1);
+		return (int) Math.floor(terrainX / gridSquareSize);
+	}
+	
+	public int worldToGridZ(float worldZ){
+		float terrainZ = worldZ - this.z;		
+		float gridSquareSize = SIZE / (float) (heights.length - 1);
+		return (int) Math.floor(terrainZ / gridSquareSize);		
+	}
+	
+	public float gridToWorldX(int gridX){
+		float gridSquareSize = SIZE / (float) (heights.length - 1);
+		return gridX * gridSquareSize + this.x;
+	}
+	
+	public float gridToWorldZ(int gridZ){
+		float gridSquareSize = SIZE / (float) (heights.length - 1);
+		return gridZ * gridSquareSize + this.z;
+	}
+	
+	public int getGridXCount(){
+		return heights.length-1;
+	}
+	public int getGridZCount(){
+		return heights.length-1;
+	}
+	
+	public void setTerrainHeight(int gridX, int gridZ, float height){
+		if(gridX < 0 || gridZ < 0)
+			return;
+		if(gridX >= heights.length || gridZ >= heights.length)
+			return;
+		
+		this.heights[gridX][gridZ] = height;
+	}
+	
+	//Reloads the terrain vertices into the VBO so the terrain mesh updates on screen
+	public void refreshTerrain(){
+		//int vaoID = model.getVaoID();
+		int vboID = model.getVboID(0);	//get the vboID of the positions buffer in the terrain VAO
+		
+		int VERTEX_COUNT = heights.length;
+		int count = VERTEX_COUNT * VERTEX_COUNT;
+		float[] vertices = new float[count * 3];
+		int vertexPointer = 0;
+		for(int i=0;i<VERTEX_COUNT;i++){
+			for(int j=0;j<VERTEX_COUNT;j++){
+				vertices[vertexPointer*3] = (float)j/((float)VERTEX_COUNT - 1) * SIZE;
+				vertices[vertexPointer*3+1] = heights[j][i];
+				vertices[vertexPointer*3+2] = (float)i/((float)VERTEX_COUNT - 1) * SIZE;
+				vertexPointer++;
+			}
+		}
+		
+		//GL30.glBindVertexArray(model.getVaoID());
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboID);
+		FloatBuffer buffer = storeDataInFloatBuffer(vertices);
+		GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, buffer);
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+		//GL30.glBindVertexArray(0);
+		
+	}
+	
+	private FloatBuffer storeDataInFloatBuffer(float[] data){
+		FloatBuffer buffer = BufferUtils.createFloatBuffer(data.length);
+		buffer.put(data);
+		buffer.flip();
+		return buffer;
 	}
 	
 }

@@ -47,14 +47,13 @@ public class CollisionManager {
 				Entity entity2 = collisionObjects.get(j).entity;
 				if(entity1 == entity2)
 					continue;
-				float dx = ((aabb1.x2+aabb1.x1)/2) - ((aabb2.x2+aabb2.x1)/2);
-				float dy = ((aabb1.y2+aabb1.y1)/2) - ((aabb2.y2+aabb2.y1)/2);
-				float dz = ((aabb1.z2+aabb1.z1)/2) - ((aabb2.x2+aabb2.z1)/2);
-				float dist = (float)Math.sqrt(dx*dx+dy*dy+dz*dz);
-				//System.out.println("dist="+dist);
 				if(aabb1.doesCollide(aabb2)){
-					entity1.onEntityCollide(entity2);
-					entity2.onEntityCollide(entity1);
+					boolean b1 = entity1.onEntityCollide(entity2);
+					boolean b2 = entity2.onEntityCollide(entity1);
+					
+					//if the onEntityCollide method of any of the entities returns false, the collision was cancelled.
+					if(!b1 || !b2)
+						break;
 					
 					//if one of the entities was a projectile, it will be dead at this point, so we don't need to apply physics
 					if(entity1.isAlive() && entity2.isAlive())

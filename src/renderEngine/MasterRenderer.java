@@ -29,7 +29,7 @@ public class MasterRenderer {
 	
 	private static final float FOV = 70;
 	private static final float NEAR_PLANE = 1.0f;		//setting this too low will cause the depth buffer to have insufficient resolution, causing z-fighting, and flickering! See https://www.sjbaker.org/steve/omniv/love_your_z_buffer.html
-	private static final float FAR_PLANE = 1000f;
+	private static final float FAR_PLANE = 10000f;
 	
 	public static final Vector3f SKY_COLOUR = new Vector3f(0.7f, 0.7f, 0.7f);
 	
@@ -206,6 +206,10 @@ public class MasterRenderer {
 		else{
 			return null;
 		}
+	}
+	
+	public TerrainRenderer getTerrainRenderer(){
+		return this.terrainRenderer;
 	}
 	
 }

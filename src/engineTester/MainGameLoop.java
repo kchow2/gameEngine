@@ -16,15 +16,17 @@ import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
 import entities.Camera;
-import entities.CollisionComponent;
+import entities.Camera.CameraMode;
 import entities.Entity;
 import entities.HoverCraftComponent;
 import entities.Light;
 import entities.Player;
 import entities.WeaponComponent;
 import fontMeshCreator.FontType;
-import fontMeshCreator.GUIText;
+import fontMeshCreator.GuiText;
+import fontRendering.FontRenderer;
 import fontRendering.TextMaster;
+import guis.GuiMaster;
 import guis.GuiRenderer;
 import guis.GuiTexture;
 import models.DAEFileLoader;
@@ -33,7 +35,6 @@ import models.TexturedModel;
 import particles.ParticleMaster;
 import particles.ParticleSystem;
 import particles.ParticleTexture;
-import physics.AABB;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.MasterRenderer;
@@ -48,13 +49,11 @@ import world.World;
 
 public class MainGameLoop {
 	public static void main(String[] args){	
-		//testINI();
-		DisplayManager.createDisplay();
 		
+		DisplayManager.createDisplay();
 		Loader loader = new Loader();
 		MasterRenderer renderer = new MasterRenderer(loader);
-		World world = new World(loader);
-		TextMaster.init(loader);
+		World world = new World(loader, renderer);
 		ParticleMaster.init(loader, renderer.getProjectionMatrix());
 		
 		FontType font = null;
@@ -64,8 +63,6 @@ public class MainGameLoop {
 		} catch(IOException e){
 			System.err.println("Failed to load res/arial.fnt");
 		}
-		GUIText fpsCounterText = new GUIText("0", 2.0f, font, new Vector2f(0.01f, 0.0f), 0.5f, false);
-		fpsCounterText.setColour(1, 1, 0);
 		
 		List<Light> lights = new ArrayList<Light>();
 		Light sun = new Light(new Vector3f(300,100,300), new Vector3f(0.8f,0.8f,0.8f), new Vector3f(1,0,0));
@@ -88,9 +85,6 @@ public class MainGameLoop {
 		} else{
 			System.err.println("DAE FILE FAILED!");
 		}
-		//for(Hardpoint h:modelData.getHardpoints()){
-		//	System.out.println(h);
-		//}
 		
 		Entity entityPlayer = testEntity;//world.createEntity("tank", new Vector3f(100,0,100), true);
 		entityPlayer.addComponent(new HoverCraftComponent(entityPlayer));
@@ -104,22 +98,31 @@ public class MainGameLoop {
 		
 		//Camera
 		Camera camera = new Camera(entityPlayer, world);
-		camera.setDistanceFromPlayer(20.0f);
-		camera.setAngleAroundPlayer(0.0f);
-		camera.setPitch(15.0f);
+		camera.setCameraMode(CameraMode.THIRD_PERSON);
+		camera.setThirdPersonDistance(20.0f);
+		camera.setThirdPersonYaw(0.0f);
+		camera.setThirdPersonPitch(15.0f);
 		
 		//Player 
-		Player player = new Player(entityPlayer);
-		
-		//Entity testEntityFactory = world.createEntity2("tank", new Vector3f(110,0,100), 0, 0, 0, 1.0f);
-		//testEntityFactory.addComponent(new CollisionComponent(world.collisionManager, new AABB(1,1,1)));
-
+		Player player = new Player(world, entityPlayer, camera);
 		
 		List<GuiTexture> guis = new ArrayList<GuiTexture>();
 		//GuiTexture targetingReticle = new GuiTexture(loader.loadTexture("target"), new Vector2f(0f,0f), new Vector2f(0.1f,0.1f));
-		//guis.add(targetingReticlew);
+		//guis.add(targetingReticle);
 		//targetingReticle.hide();
 		GuiRenderer guiRenderer = new GuiRenderer(loader);
+		GuiMaster.init(loader);
+		
+		FontRenderer fontRenderer = new FontRenderer();
+		TextMaster.init(loader, fontRenderer);
+		
+		//GuiText fpsCounterText = new GuiText(loader, "0", 2.0f, font, new Vector2f(0.01f, 0.0f), 0.5f, false);
+		//TextMaster.addText(fpsCounterText);
+		//fpsCounterText.setColour(1, 1, 0);
+		
+		
+		//WorldEditorGui worldEditorGui = new WorldEditorGui(loader);
+		//worldEditorGui.setVisible(true);
 		
 		MousePicker mousePicker = new MousePicker(camera, renderer.getProjectionMatrix(), world.getTerrain());
 
@@ -223,14 +226,17 @@ public class MainGameLoop {
 			//fps counter
 			fps = DisplayManager.getFps();
 			if(fps != prevFps){
-				TextMaster.removeText(fpsCounterText);
-				fpsCounterText = new GUIText(String.valueOf(fps), 2.0f, font, new Vector2f(0.01f, 0.0f), 0.5f, false);
-				fpsCounterText.setColour(1, 1, 0);
+				//TextMaster.removeText(fpsCounterText);
+				//fpsCounterText = new GuiText(loader, String.valueOf(fps), 2.0f, font, new Vector2f(0.01f, 0.0f), 0.5f, false);
+				//TextMaster.addText(fpsCounterText);
+				//fpsCounterText.setColour(1, 1, 0);
 				prevFps = fps;
 			}
 			
 			ParticleMaster.renderParticles(camera);
+			GuiMaster.render(guiRenderer);
 			guiRenderer.render(guis);
+			GuiMaster.renderTexts(fontRenderer);
 			TextMaster.render();
 			DisplayManager.updateDisplay();
 		}

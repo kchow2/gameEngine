@@ -12,9 +12,11 @@ public class Projectile extends Entity{
 	private int lifetime_ms;	//lifetime of the projectile in milliseconds. If the projectile hasn't hit anything within this time, it will despawn.
 	private long startTime;
 	private TexturedModel explosionModel;
+	private Entity shooter;
 	
-	public Projectile(World world, TexturedModel model, TexturedModel explosionModel, Vector3f position, float rotX, float rotY, float rotZ, float scale, float shotSpeed, float lifetime) {
-		super(world, model, position, rotX, rotY, rotZ, 1.0f, 1.0f, 1.0f, scale);
+	public Projectile(World world, Entity shooter, TexturedModel model, TexturedModel explosionModel, Vector3f position, float rotX, float rotY, float rotZ, float scale, float shotSpeed, float lifetime) {
+		super(world, model, position, rotX, rotY, rotZ, 0.3f, 0.3f, 0.3f, scale);
+		this.shooter = shooter;
 		this.explosionModel = explosionModel;
 		this.lifetime_ms = (int)(lifetime*1000);
 		this.startTime = getCurrentTime();
@@ -22,7 +24,8 @@ public class Projectile extends Entity{
 		isAlive = true;
 		isGravityAffected = false;
 		useMovementDamping = false;
-		this.addComponent(new CollisionComponent(world.collisionManager, new AABB(0.5f,0.5f,0.5f)));
+		this.setCanCollide(true);
+		//this.addComponent(new CollisionComponent(world.collisionManager, new AABB(0.5f,0.5f,0.5f)));
 	}
 	
 	@Override
@@ -36,16 +39,25 @@ public class Projectile extends Entity{
 	}
 	
 	@Override
-	protected void onTerrainCollide(Terrain terrain){
+	protected boolean onTerrainCollide(Terrain terrain){
 		this.setDead();
 		this.spawnExplosion(this.getPosition());
+		return true;
 	}
 	
 	@Override
-	public void onEntityCollide(Entity e){
-		this.setDead();
-		this.spawnExplosion(this.getPosition());
-		System.out.println("Entity hit!"+e);
+	public boolean onEntityCollide(Entity e){
+		if(!e.equals(shooter)){
+			this.setDead();
+			this.spawnExplosion(this.getPosition());
+			
+			int damage = 15;
+			e.applyDamage(damage);
+			return true;
+		}
+		else{
+			return false;
+		}
 	}
 	
 	private void spawnExplosion(Vector3f position){
